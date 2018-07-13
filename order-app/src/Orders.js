@@ -53,7 +53,7 @@ const Orders = ({username}) => (
                 }
               </td>
               <td>
-                <Link to={'/'}>{o.order_id}</Link>
+                <Link to={'/order/'+o.order_id}>{o.order_id}</Link>
               </td>
               <td>
                 {getStatus(o)}
