@@ -1,0 +1,4 @@
+creds/
+user/node_modules/
+hasura/node_modules/
+restaurant/node_modules/

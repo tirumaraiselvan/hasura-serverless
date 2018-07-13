@@ -1,0 +1,3 @@
+- args:
+    sql: DROP TABLE public."status"
+  type: run_sql

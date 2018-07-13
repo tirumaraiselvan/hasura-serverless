@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hasura-graphql-engine
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hasura-graphql-engine
+  template:
+    metadata:
+      labels:
+        app: hasura-graphql-engine
+    spec:
+      containers:
+      - name: hasura
+        image: hasura/graphql-engine:v1.0.0-alpha02
+        command: 
+        - sh
+        - -c
+        - "sleep 20 && graphql-engine --database-url  postgres://$POSTGRES_DB_USER:$POSTGRES_DB_PASSWORD@$POSTGRES_DB_HOST/postgres serve --server-port 8080 --enable-console"
+        ports:
+        - containerPort: 8080
+        env:
+        - name: POSTGRES_DB_HOST
+          value: 127.0.0.1:5432
+        - name: POSTGRES_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: cloudsql-db-credentials
+              key: username
+        - name: POSTGRES_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cloudsql-db-credentials
+              key: password
+      - name: cloudsql-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.11
+        command: ["/cloud_sql_proxy",
+                  "-instances=danava-test:us-central1:swiggy-graphql-serverless=tcp:5432",
+                  "-credential_file=/secrets/cloudsql/credentials.json"]
+        volumeMounts:
+          - name: cloudsql-instance-credentials
+            mountPath: /secrets/cloudsql
+            readOnly: true
+      volumes:
+        - name: cloudsql-instance-credentials
+          secret:
+            secretName: cloudsql-instance-credentials
+

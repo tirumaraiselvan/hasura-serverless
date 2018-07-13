@@ -1,0 +1,4 @@
+- args:
+    sql: ALTER TABLE public."orders" ADD COLUMN "approved" boolean NOT NULL DEFAULT
+      false
+  type: run_sql

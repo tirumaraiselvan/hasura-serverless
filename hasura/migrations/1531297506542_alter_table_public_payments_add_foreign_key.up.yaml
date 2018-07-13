@@ -1,0 +1,4 @@
+- args:
+    sql: ALTER TABLE public."payments" ADD FOREIGN KEY ("order_id") REFERENCES public."orders"
+      ("order_id")
+  type: run_sql
