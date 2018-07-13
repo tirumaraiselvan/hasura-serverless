@@ -116,8 +116,9 @@ function watchStatus(order_id) {
   var dataKey = "orders";
   const subscriber = Hasura.subscribe(client, subscribeStatusQuery, variables, dataKey);
   subscriber.start();
-  subscriber.events.on('data', data => {
-    console.log("got event");
+  subscriber.events.on('data', eventData => {
+      console.log("got event");
+      var data = eventData.data;
       console.log(data);
       if((data.order_valid == true) && (data.payment_valid == null) && (paymentInitiated == false)){
         doPayment(data.order_id, paymentInfo, paymentMetadata);

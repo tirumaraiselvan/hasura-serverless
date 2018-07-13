@@ -53,11 +53,12 @@ function run() {
 
   const subscriber = Hasura.subscribe(client, subscribeOrdersQuery, variables, dataKey);
   subscriber.start();
-  subscriber.events.on('data', data => {
-    console.log("got event");
-    console.log(JSON.stringify(data, null, 2));
-    var order_id = data.order_id;
-    setTimeout(approve, 5000, order_id);
+  subscriber.events.on('data', eventData => {
+      console.log("got event");
+      var data = eventData.data;
+      console.log(JSON.stringify(data, null, 2));
+      var order_id = data.order_id;
+      setTimeout(approve, 5000, order_id);
   });
 }
 

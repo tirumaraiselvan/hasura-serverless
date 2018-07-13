@@ -7,8 +7,6 @@ const projectId = 'danava-test';
 const pubsubClient = new PubSub({
     projectId: projectId,
 });
-const assignDriverTopicName = 'projects/danava-test/topics/swiggy-graphql-serverless-assigndriver';
-const orderValidateTopicName = 'projects/danava-test/topics/swiggy-graphql-serverless-validateorder';
 
 // Graphql client init
 const client = new GraphQLClient('http://35.232.191.22/v1alpha1/graphql', {
@@ -17,63 +15,71 @@ const client = new GraphQLClient('http://35.232.191.22/v1alpha1/graphql', {
   },
 });
 
-// TODO use is_null
-const subscribeUnvalidatedOrdersQuery = `
-query{
-  orders(where: {order_valid: {_neq: true}}){
-    order_id
-    order_valid
+const subscribeLiveQueries= `
+query {
+  subscriptions {
+    id
+    query
+    topic_name
+    data_key
   }
 }
 `;
 
-const subscribeDriversQuery = `
-query {
-  orders(where: {approved: {_eq: true}, driver_assigned: {_eq: false}}){
-    order_id
-    address
-    restaurant_id
-  }
-}
-`;
+var subscribers = [];
+var currentBatchId = "";
 
 function publishEvent(payload, topic){
-	var data = JSON.stringify(payload);
-  var dataBuffer = Buffer.from(data);
+	  var data = JSON.stringify(payload);
+    var dataBuffer = Buffer.from(data);
 
-  pubsubClient
-      .topic(topic)
-      .publisher()
-      .publish(dataBuffer)
-      .then(messageId => {
-          console.log(`Message ${messageId} published.`);
-      })
-      .catch(err => {
-          console.error('Error publishing event:', err);
-      });
+    pubsubClient
+        .topic(topic)
+        .publisher()
+        .publish(dataBuffer)
+        .then(messageId => {
+            console.log(`Message ${messageId} published.`);
+        })
+        .catch(err => {
+            console.error('Error publishing event:', err);
+        });
 }
 
-function run() {
-  var dataKey = "orders";
-  var variables = {};
+function watchNewSubscription() {
+    var dataKey = "subscriptions";
+    var variables = {};
+    const liveQuerySubscriber = Hasura.subscribe(client, subscribeLiveQueries, variables, dataKey);
+    liveQuerySubscriber.start();
+    liveQuerySubscriber.events.on('data', eventData => {
+        console.log("got event");
+        var batchId = eventData.batchId;
+        if (batchId != currentBatchId){
+            console.log("clearing existing subscriptions");
+            subscribers.forEach(function(sub){
+                sub.end();
+            });
+            currentBatchId = batchId;
+        }
+        var data = eventData.data;
+        console.log("adding subscription with id: ", data.id);
+        var dataKey = data.data_key;
+        var query  = data.query;
+        var variables = {};
+        var topicName = data.topic_name;
 
-  const driversSubscriber = Hasura.subscribe(client, subscribeDriversQuery, variables, dataKey);
-  driversSubscriber.start();
-  driversSubscriber.events.on('data', data => {
-    console.log("got event");
-    console.log(JSON.stringify(data, null, 2));
-    console.log("scheduling driver assignment...");
-    publishEvent(data, assignDriverTopicName);
-  });
-
-    const orderValidateSubscriber = Hasura.subscribe(client, subscribeUnvalidatedOrdersQuery, variables, dataKey);
-  orderValidateSubscriber.start();
-  orderValidateSubscriber.events.on('data', data => {
-      console.log("got event");
-      console.log(JSON.stringify(data, null, 2));
-      console.log("scheduling order validation...");
-      publishEvent(data, orderValidateTopicName);
-  });
+        var subscriber = Hasura.subscribe(client, query, variables, dataKey);
+        subscriber.start();
+        subscriber.events.on('data', eventData => {
+            console.log("got event");
+            var data = eventData.data;
+            console.log(JSON.stringify(data, null, 2));
+            publishEvent(data, topicName);
+        });
+        subscribers.push(subscriber);
+    });
 }
 
-run();
+console.log("starting subscription watcher....");
+
+watchNewSubscription();
+
