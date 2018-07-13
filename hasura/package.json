@@ -10,11 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@google-cloud/pubsub": "^0.19.0",
-    "body-parser": "^1.18.3",
-    "cookie-parser": "^1.4.3",
     "deep-equal": "^1.0.1",
-    "express": "^4.16.3",
-    "graphql-request": "^1.6.0",
-    "multer": "^1.3.1"
+    "graphql-request": "^1.6.0"
   }
 }

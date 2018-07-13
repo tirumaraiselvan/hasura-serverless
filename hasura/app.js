@@ -1,5 +1,3 @@
-const express = require('express');
-const bodyParser = require('body-parser');
 const { GraphQLClient } = require('graphql-request');
 const Hasura = require('./index');
 const PubSub = require('@google-cloud/pubsub');
@@ -17,10 +15,6 @@ const client = new GraphQLClient('http://35.232.191.22/v1alpha1/graphql', {
   },
 });
 
-
-var app = express();
-app.use(bodyParser.json());
-
 const subscribeLiveQueries= `
 query {
   subscriptions {
@@ -31,78 +25,6 @@ query {
   }
 }
 `;
-
-const insertSubscription = `
-mutation ($query: String!, $topic_name:String!, $data_key:String!){
-  insert_subscriptions(objects:[
-    {
-      query: $query
-      topic_name: $topic_name
-      data_key: $data_key
-    }
-  ]){
-    returning{
-      id
-    }
-  }
-}
-`;
-
-app.get('/', function (req, res) {
-    console.log("listing subscriptions");
-    client.request(subscribeLiveQueries)
-        .then(data => {
-            res.status(200).json(data);
-        })
-        .catch(err => {
-            res.status(500).json({error: err});
-        });
-});
-
-app.get('/list', function (req, res) {
-    console.log("listing subscriptions");
-    client.request(subscribeLiveQueries)
-        .then(data => {
-            res.status(200).json(data);
-        })
-        .catch(err => {
-            res.status(500).json({error: err});
-        });
-});
-
-app.post('/', function (req, res) {
-    console.log("posting subscription");
-    var variables = {
-        query: req.body.query,
-        topic_name: req.body.topic_name,
-        data_key: req.body.data_key
-    };
-    client.request(insertSubscription, variables)
-        .then(data => {
-            res.status(200).json(data);
-        })
-        .catch(err => {
-            console.log("error posting subscription");
-            res.status(500).json({error: err});
-        });
-});
-
-app.post('/subscribe', function (req, res) {
-    console.log("posting subscription");
-    var variables = {
-        query: req.body.query,
-        topic_name: req.body.topic_name,
-        data_key: req.body.data_key
-    };
-    client.request(insertSubscription, variables)
-        .then(data => {
-            res.status(200).json(data);
-        })
-        .catch(err => {
-            res.status(500).json({error: err});
-        });
-});
-
 
 var subscribers = [];
 var currentBatchId = "";
@@ -157,61 +79,7 @@ function watchNewSubscription() {
     });
 }
 
+console.log("starting subscription watcher....");
+
 watchNewSubscription();
 
-var server = app.listen(8081, function () {
-
-    var host = server.address().address;
-    var port = server.address().port;
-
-    console.log("Hasura subscribe engine listening at http://%s:%s", host, port);
-});
-
-
-
-// TODO use is_null
-// const subscribeUnvalidatedOrdersQuery = `
-// query{
-//   orders(where: {order_valid: {_neq: true}}){
-//     order_id
-//     order_valid
-//   }
-// }
-// `;
-
-// const subscribeDriversQuery = `
-// query {
-//   orders(where: {approved: {_eq: true}, driver_assigned: {_eq: false}}){
-//     order_id
-//     address
-//     restaurant_id
-//   }
-// }
-// `;
-
-
-
-// function run() {
-//   var dataKey = "orders";
-//   var variables = {};
-
-//   const driversSubscriber = Hasura.subscribe(client, subscribeDriversQuery, variables, dataKey);
-//   driversSubscriber.start();
-//   driversSubscriber.events.on('data', data => {
-//     console.log("got event");
-//     console.log(JSON.stringify(data, null, 2));
-//     console.log("scheduling driver assignment...");
-//     publishEvent(data, assignDriverTopicName);
-//   });
-
-//     const orderValidateSubscriber = Hasura.subscribe(client, subscribeUnvalidatedOrdersQuery, variables, dataKey);
-//   orderValidateSubscriber.start();
-//   orderValidateSubscriber.events.on('data', data => {
-//       console.log("got event");
-//       console.log(JSON.stringify(data, null, 2));
-//       console.log("scheduling order validation...");
-//       publishEvent(data, orderValidateTopicName);
-//   });
-// }
-
-//run();
