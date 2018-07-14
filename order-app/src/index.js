@@ -47,13 +47,8 @@ const defaultOptions = {
 };
 const client = new ApolloClient({
   link,
-  cache: new InMemoryCache(),
-  addTypename: false,
-  defaultOptions: defaultOptions,
-  ssrMode: true
+  cache: new InMemoryCache()
 });
-
-client.resetStore();
 
 ReactDOM.render(
   (<ApolloProvider client={client}><App /></ApolloProvider>),
