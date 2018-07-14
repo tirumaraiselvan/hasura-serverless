@@ -48,6 +48,7 @@ function approve(order_id){
 }
 
 function run() {
+  console.log("starting restaurant id for client: ", restaurantId);
   var variables = {rid: restaurantId};
   var dataKey = "orders";
 

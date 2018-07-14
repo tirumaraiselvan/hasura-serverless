@@ -1,0 +1,8 @@
+FROM node:9.11.2
+
+COPY restaurant /src/restaurant
+COPY hasura /src/hasura
+
+WORKDIR /src/restaurant
+
+CMD ["node", "app.js"]
