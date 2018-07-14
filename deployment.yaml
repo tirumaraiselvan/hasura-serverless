@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: hasura
-        image: hasura/graphql-engine:v1.0.0-alpha02
+        image: hasura/graphql-engine:dev-livequeries-e3921d3
         command: 
         - sh
         - -c

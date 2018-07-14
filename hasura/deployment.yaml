@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hasura-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hasura-client
+  template:
+    metadata:
+      labels:
+        app: hasura-client
+    spec:
+      containers:
+      - name: client
+        image: tirumarai/swiggy-graphql-client
+
