@@ -3,11 +3,11 @@ import {Table, Button, Grid} from 'react-bootstrap';
 
 import {Link} from "react-router-dom";
 import gql from "graphql-tag";
-import { Query } from "react-apollo";
+import {Subscription} from "react-apollo";
 
 const GET_ORDERS = gql`
-  query fetch_orders($user: String!, $order_id: String!) {
-    orders(where: {user_id: {_eq: $user}}, order_by: created_asc) {
+  subscription fetch_orders($user: String!, $order_id: String! ) {
+    orders(where: {user_id: {_eq: $user}, order_id: {_eq: $order_id}}, order_by: created_asc) {
       order_id
       order_valid
       payment_valid
@@ -39,11 +39,12 @@ const OrderStatus = ({username, orderId}) => {
     <Grid>
       <div>
         <hr/>
-        <Query
-          query={GET_ORDERS} variables={{user: username, order_id: orderId}}>
+        <Subscription
+          subscription={GET_ORDERS} variables={{user: username, order_id: orderId}}>
           {({loading, error, data}) => {
             if (loading) return "Loading...";
             if (error) return `Error!: ${error}`;
+            console.log(data);
             if (data.orders.length === 0) {
               return "No such order id."
             } else {
@@ -83,7 +84,7 @@ const OrderStatus = ({username, orderId}) => {
               );
             }
           }}
-        </Query>
+        </Subscription>
         <hr/>
         <Link to="/"><Button bsStyle="danger">Back</Button></Link>
       </div>

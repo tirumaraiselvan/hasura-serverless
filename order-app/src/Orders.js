@@ -3,10 +3,10 @@ import {Table} from 'react-bootstrap';
 
 import {Link} from "react-router-dom";
 import gql from "graphql-tag";
-import { Query } from "react-apollo";
+import {Subscription} from "react-apollo";
 
 const GET_ORDERS = gql`
-  query fetch_orders($user: String!) {
+  subscription fetch_orders($user: String!) {
     orders(where: {user_id: {_eq: $user}}, order_by: created_asc) {
       order_id
       order_valid
@@ -37,8 +37,8 @@ const Orders = ({username}) => (
   <div>
     <h2>Your orders </h2>
     <hr/>
-    <Query
-      query={GET_ORDERS} variables={{user: username}}>
+    <Subscription
+      subscription={GET_ORDERS} variables={{user: username}}>
       {({loading, error, data}) => {
         if (loading) return "Loading...";
         if (error) return `Error!: ${error}`;
@@ -71,7 +71,7 @@ const Orders = ({username}) => (
           );
         }
       }}
-    </Query>
+    </Subscription>
     <hr/>
   </div>
 );
