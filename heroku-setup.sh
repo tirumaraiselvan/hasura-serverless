@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e
 
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+echo -e "${GREEN}Removing existing remotes (if exists)...${NC}"
+git remote remove hasura || true
+git remote remove orders || true
+git remote remove analytics || true
 mkdir -p temp
 cd temp
 rm -rf graphql-engine-heroku
@@ -20,17 +27,23 @@ hasura migrate apply
 cd ..
 
 ORDER_APP_INFO=$(heroku apps:create --remote orders --json)
+ORDER_APP_NAME=$(echo $ORDER_APP_INFO | jq -r ".name")
 ORDER_APP_WEB_URL=$(echo $ORDER_APP_INFO | jq -r ".web_url")
+HTTP_GRAPHQL_ENDPOINT=$HASURA_APP_WEB_URL/v1alpha1/graphql
+heroku config:set REACT_APP_HASURA_HTTP_URL=$HTTP_GRAPHQL_ENDPOINT -a $ORDER_APP_NAME
+WS=ws
+WEBSOCKET_GRAPHQL_ENDPOINT=${HTTP_GRAPHQL_ENDPOINT/http/WS}
+heroku config:set REACT_APP_HASURA_WEBSOCKET_URL=$WEBSOCKET_GRAPHQL_ENDPOINT -a $ORDER_APP_NAME
 git subtree push --prefix order-app orders master
 
 
 ANALYTICS_APP_INFO=$(heroku apps:create --remote analytics --json)
+ANALYTICS_APP_NAME=$(echo $ANALYTICS_APP_INFO | jq -r ".name")
 ANALYTICS_APP_WEB_URL=$(echo $ANALYTICS_APP_INFO | jq -r ".web_url")
+heroku config:set REACT_APP_HASURA_HTTP_URL=$HTTP_GRAPHQL_ENDPOINT -a $ANALYTICS_APP_NAME
+heroku config:set REACT_APP_HASURA_WEBSOCKET_URL=$WEBSOCKET_GRAPHQL_ENDPOINT -a $ANALYTICS_APP_NAME
 git subtree push --prefix analytics analytics master
 
-
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
 
 echo
 echo -e "${GREEN}Run \`hasura console\` from the \`hasura\` directory${NC}"
