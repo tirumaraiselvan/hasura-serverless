@@ -14,15 +14,17 @@ import { HttpLink } from 'apollo-link-http';
 import { split } from 'apollo-link';
 import { getMainDefinition } from 'apollo-utilities';
 
+const wsurl = process.env.REACT_APP_HASURA_WEBSOCKET_URL
+const httpurl = process.env.REACT_APP_HASURA_HTTP_URL
 
 const wsLink = new WebSocketLink({
-  uri: "wss://35.232.191.22/v1alpha1/graphql",
+  uri: wsurl,
   options: {
     reconnect: true
   }
 });
 const httpLink = new HttpLink({
-  uri: "https://35.232.191.22/v1alpha1/graphql",
+  uri: httpurl,
 });
 
 const link = split(
