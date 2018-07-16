@@ -16,13 +16,13 @@ import { getMainDefinition } from 'apollo-utilities';
 
 
 const wsLink = new WebSocketLink({
-  uri: "ws://35.232.191.22/v1alpha1/graphql",
+  uri: "wss://35.232.191.22/v1alpha1/graphql",
   options: {
     reconnect: true
   }
 });
 const httpLink = new HttpLink({
-  uri: "http://35.232.191.22/v1alpha1/graphql",
+  uri: "https://35.232.191.22/v1alpha1/graphql",
 });
 
 const link = split(

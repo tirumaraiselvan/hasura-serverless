@@ -2,6 +2,10 @@
   "name": "analytics",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "npm": "5.7.1",
+    "node": "9.5.0"
+  },
   "dependencies": {
     "apollo-boost": "^0.1.10",
     "apollo-cache-inmemory": "^1.2.5",
