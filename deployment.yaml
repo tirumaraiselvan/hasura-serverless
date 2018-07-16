@@ -18,7 +18,7 @@ spec:
         command: 
         - sh
         - -c
-        - "sleep 20 && graphql-engine --database-url  postgres://$POSTGRES_DB_USER:$POSTGRES_DB_PASSWORD@$POSTGRES_DB_HOST/postgres serve --server-port 8080 --enable-console"
+        - "graphql-engine --database-url  postgres://$POSTGRES_DB_USER:$POSTGRES_DB_PASSWORD@$POSTGRES_DB_HOST/postgres serve --server-port 8080 --enable-console"
         ports:
         - containerPort: 8080
         env:
@@ -37,14 +37,5 @@ spec:
       - name: cloudsql-proxy
         image: gcr.io/cloudsql-docker/gce-proxy:1.11
         command: ["/cloud_sql_proxy",
-                  "-instances=danava-test:us-central1:swiggy-graphql-serverless=tcp:5432",
-                  "-credential_file=/secrets/cloudsql/credentials.json"]
-        volumeMounts:
-          - name: cloudsql-instance-credentials
-            mountPath: /secrets/cloudsql
-            readOnly: true
-      volumes:
-        - name: cloudsql-instance-credentials
-          secret:
-            secretName: cloudsql-instance-credentials
+                  "-instances=danava-test:us-central1:swiggy-graphql-serverless=tcp:5432"]
 
