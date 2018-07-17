@@ -1,6 +1,9 @@
 const { GraphQLClient } = require('graphql-request');
-const Hasura = require('./index');
+const Hasura = require('./hasura');
 const PubSub = require('@google-cloud/pubsub');
+
+const express = require('express');
+const app = express();
 
 // Google pubsub client init
 const projectId = 'danava-test';
@@ -8,12 +11,15 @@ const pubsubClient = new PubSub({
     projectId: projectId,
 });
 
+const httpurl = process.env.HASURA_HTTP_URL;
+
 // Graphql client init
-const client = new GraphQLClient('http://35.232.191.22/v1alpha1/graphql', {
-  headers: {
-    Authorization: 'Bearer my-jwt-token',
-  },
+const client = new GraphQLClient(httpurl, {
+    headers: {
+        Authorization: 'Bearer my-jwt-token',
+    },
 });
+
 
 const subscribeLiveQueries= `
 query {
@@ -83,3 +89,6 @@ console.log("starting subscription watcher....");
 
 watchNewSubscription();
 
+app.get('/', (req,res) => res.send("Hello hasura client. Check logs for events"));
+
+app.listen(process.env.PORT, () => console.log('App listening !'));
