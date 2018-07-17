@@ -31,8 +31,8 @@ const Orders = ({username}) => (
         if (data.orders.length === 0) {
           return "No orders yet."
         } else {
-          const orders = data.orders.map((o) => (
-            <tr>
+          const orders = data.orders.map((o, i) => (
+            <tr key={i}>
               <td>
                 {
                   (new Date(o.created)).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
