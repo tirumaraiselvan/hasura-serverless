@@ -1,0 +1,4 @@
+- args:
+    sql: ALTER TABLE public."orders" ADD COLUMN "created" timestamptz NOT NULL DEFAULT
+      now()
+  type: run_sql
