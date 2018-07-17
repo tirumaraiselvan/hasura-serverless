@@ -4,6 +4,7 @@ import {Table} from 'react-bootstrap';
 import {Link} from "react-router-dom";
 import gql from "graphql-tag";
 import {Subscription} from "react-apollo";
+import getStatus from './GetStatus';
 
 const GET_ORDERS = gql`
   subscription fetch_orders($user: String!) {
@@ -17,21 +18,6 @@ const GET_ORDERS = gql`
     }
   }
 `;
-const getStatus = ({order_valid, payment_valid, approved, driver_assigned}) => {
-  if (!(order_valid)) {
-    return 'Validating...';
-  } else if (order_valid && !payment_valid) {
-    return 'Validating payment...';
-  } else if (payment_valid && !approved) {
-    return 'Waiting for restaurant...';
-  } else if (approved && !driver_assigned) {
-    return 'Assigning driver...';
-  } else if (driver_assigned) {
-    return 'Driver assigned!';
-  } else {
-    return 'Unknown state';
-  }
-}
 
 const Orders = ({username}) => (
   <div>

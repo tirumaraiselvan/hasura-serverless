@@ -36,6 +36,23 @@ const PLACE_ORDER = gql`
   }
 `;
 
+const PLACE_10_ORDER = gql`
+  mutation ($orders: [orders_insert_input!]!, $items: [items_insert_input!]!) {
+    insert_orders(objects: $orders) {
+      returning {
+        order_id
+      }
+    },
+
+    insert_items(objects: $items) {
+      returning {
+        id
+      }
+    }
+  }
+`;
+
+
 class PlaceOrder extends React.Component {
   constructor (props) {
     super(props);
@@ -116,6 +133,59 @@ class PlaceOrder extends React.Component {
                           }})
                       }}>
                       Order
+                    </Button>&nbsp;&nbsp;
+                  </span>
+                );
+              }}
+            </Mutation>
+            <Mutation mutation={PLACE_10_ORDER}>
+              {(placeOrder, {loading, error, data}) => {
+                if (data) {
+                  this.props.routeProps.history.push('/');
+                }
+                if (loading) {
+                  return (<span><Button bsStyle="primary" disabled>Loading...</Button>&nbsp;&nbsp;</span>);
+                }
+                if (error) {
+                  return (<span><Button bsStyle="primary" >Try again: {error.toString()}</Button>&nbsp;&nbsp;</span>);
+                }
+                const items = Object.keys(this.state.items).filter((item) => (
+                  this.state.items[item]
+                )).map((item) => (
+                  {
+                    order_id: this.state.uuid,
+                    item
+                  }));
+
+                const username = this.props.username;
+                const orders = [...Array(10).keys()].map(() => ({
+                  order_id: uuidv1(),
+                  user_id: username,
+                  address: "my-address",
+                  restaurant_id: 1
+                }));
+                let all_items = orders.map((o) => (
+                  items.map((i) => ({
+                    order_id: o.order_id,
+                    item: i.item
+                  }))));
+                all_items = [].concat.apply([], all_items);
+                return (
+                  <span>
+                    <Button
+                      bsStyle="primary"
+                      onClick={(e) => {
+                        if (items.length === 0) {
+                          window.alert('No items selected.');
+                          return;
+                        }
+                        placeOrder({
+                          variables: {
+                            items: all_items,
+                            orders: orders
+                          }})
+                      }}>
+                      Order 10 times
                     </Button>&nbsp;&nbsp;
                   </span>
                 );
