@@ -1,12 +1,15 @@
 const { GraphQLClient } = require('graphql-request');
-const Hasura = require('../hasura');
+const Hasura = require('./hasura');
 
+const express = require('express');
+const app = express();
 
 const restaurantId = process.env.RESTAURANT_ID || 1;
 
+const httpurl = process.env.HASURA_HTTP_URL;
 
 // Graphql client init
-const client = new GraphQLClient('http://35.232.191.22/v1alpha1/graphql', {
+const client = new GraphQLClient(httpurl, {
   headers: {
     Authorization: 'Bearer my-jwt-token',
   },
@@ -64,3 +67,7 @@ function run() {
 }
 
 run();
+
+app.get('/', (req,res) => res.send("Hello Restaurant app. Check logs for events"));
+
+app.listen(process.env.PORT, () => console.log('App listening !'));
