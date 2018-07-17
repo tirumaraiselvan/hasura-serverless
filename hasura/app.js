@@ -4,6 +4,7 @@ const PubSub = require('@google-cloud/pubsub');
 
 const express = require('express');
 const app = express();
+const fs = require('fs');
 
 // Google pubsub client init
 const projectId = 'danava-test';
@@ -83,6 +84,17 @@ function watchNewSubscription() {
         });
         subscribers.push(subscriber);
     });
+}
+
+if(process.env.GOOGLE_APPLICATION_CREDENTIALS_CONTENTS) {
+  console.log("Found GOOGLE_APPLICATION_CREDENTIALS_CONTENTS");
+  fs.writeFile("credentials.json", process.env.GOOGLE_APPLICATION_CREDENTIALS_CONTENTS, function(err) {
+      if(err) {
+          return console.log(err);
+      }
+      console.log("Google Application Credentials file saved!");
+      process.env.GOOGLE_APPLICATION_CREDENTIALS="credentials.json";
+  });
 }
 
 console.log("starting subscription watcher....");
