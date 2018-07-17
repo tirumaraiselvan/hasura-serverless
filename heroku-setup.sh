@@ -8,6 +8,7 @@ echo -e "${GREEN}Removing existing remotes (if exists)...${NC}"
 git remote remove hasura || true
 git remote remove orders || true
 git remote remove analytics || true
+git remote remove restaurant || true
 mkdir -p temp
 cd temp
 rm -rf graphql-engine-heroku
@@ -44,6 +45,12 @@ heroku config:set REACT_APP_HASURA_HTTP_URL=$HTTP_GRAPHQL_ENDPOINT -a $ANALYTICS
 heroku config:set REACT_APP_HASURA_WEBSOCKET_URL=$WEBSOCKET_GRAPHQL_ENDPOINT -a $ANALYTICS_APP_NAME
 git subtree push --prefix analytics analytics master
 
+RESTAURANT_APP_INFO=$(heroku apps:create --remote restaurant --json)
+RESTAURANT_APP_NAME=$(echo $RESTAURANT_APP_INFO | jq -r ".name")
+RESTAURANT_APP_WEB_URL=$(echo $RESTAURANT_APP_INFO | jq -r ".web_url")
+heroku config:set HASURA_HTTP_URL=$HTTP_GRAPHQL_ENDPOINT -a $RESTAURANT_APP_NAME
+heroku config:set HASURA_WEBSOCKET_URL=$WEBSOCKET_GRAPHQL_ENDPOINT -a $RESTAURANT_APP_NAME
+git subtree push --prefix restaurant restaurant master
 
 echo
 echo -e "${GREEN}Run \`hasura console\` from the \`hasura\` directory${NC}"
@@ -55,4 +62,8 @@ echo
 
 echo
 echo -e "${GREEN}Analytics app is running at $ANALYTICS_APP_WEB_URL${NC}"
+echo
+
+echo
+echo -e "${GREEN}Restaurant app is running at $RESTAURANT_APP_WEB_URL${NC}"
 echo
