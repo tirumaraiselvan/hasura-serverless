@@ -23,7 +23,7 @@ module.exports = {
             },
             start: function () {
                 const link = new WebSocketLink(this.client);
-                this.executable = execute(link, {query: this.query, operationName: this.operationName});
+                this.executable = execute(link, {query: this.query, operationName: this.operationName, variables: this.variables});
             },
             end: function () {
                 this.observable.unsubscribe();

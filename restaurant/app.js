@@ -12,15 +12,14 @@ const restaurantId = process.env.RESTAURANT_ID || 1;
 const wsurl = process.env.HASURA_WEBSOCKET_URL;
 const httpurl = process.env.HASURA_HTTP_URL;
 
+console.log(httpurl);
+console.log(wsurl);
+
 const httpclient = new GraphQLClient(httpurl, {
     headers: {
         Authorization: 'Bearer my-jwt-token',
     },
 });
-
-
-console.log(httpurl);
-console.log(wsurl);
 
 const client = new SubscriptionClient(
     wsurl, {reconnect: true}, ws
