@@ -80,3 +80,9 @@ echo
 echo
 echo -e "${GREEN}Hasura client is running at $HASURA_CLIENT_WEB_URL${NC}"
 echo
+
+CMDSTR='$(cat serviceaccount.json)'
+echo
+echo -e "${GREEN}heroku config:set GOOGLE_APPLICATION_CREDENTIALS_CONTENTS=\"$CMDSTR\" -a $HASURA_CLIENT_NAME${NC}"
+echo
+
