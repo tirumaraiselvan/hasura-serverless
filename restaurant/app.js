@@ -60,6 +60,10 @@ function approve(order_id){
   });
 }
 
+function approveWait(order_id){
+    setTimeout(approve, 5000, order_id);
+}
+
 function run() {
   console.log("starting restaurant id for client: ", restaurantId);
   var variables = {rid: restaurantId};
@@ -71,8 +75,9 @@ function run() {
       console.log("got event");
       var data = eventData.data;
       console.log(JSON.stringify(data, null, 2));
-      var order_id = data.order_id;
-      setTimeout(approve, 5000, order_id);
+      data[dataKey].forEach(function(order){
+          approveWait(order.order_id);
+      });
   });
   subscriber.setObservable(obs);
 }
