@@ -4,20 +4,31 @@ const Hasura = require('./hasura');
 const express = require('express');
 const app = express();
 
+const ws = require('ws');
+const { SubscriptionClient } = require('subscriptions-transport-ws');
+
 const restaurantId = process.env.RESTAURANT_ID || 1;
 
+const wsurl = process.env.HASURA_WEBSOCKET_URL;
 const httpurl = process.env.HASURA_HTTP_URL;
 
-// Graphql client init
-const client = new GraphQLClient(httpurl, {
-  headers: {
-    Authorization: 'Bearer my-jwt-token',
-  },
+const httpclient = new GraphQLClient(httpurl, {
+    headers: {
+        Authorization: 'Bearer my-jwt-token',
+    },
 });
 
 
+console.log(httpurl);
+console.log(wsurl);
+
+const client = new SubscriptionClient(
+    wsurl, {reconnect: true}, ws
+);
+
+
 const subscribeOrdersQuery = `
-query ($rid:Int!){
+subscription orders ($rid:Int!){
   orders(where: {placed: {_eq: true}, approved: {_eq: false}, restaurant_id: {_eq: $rid}}){
     order_id
     items{
@@ -41,7 +52,7 @@ mutation ($order_id: String!) {
 function approve(order_id){
   console.log("approving order: ", order_id);
   var variables = {order_id: order_id};
-  client.request(approveOrderQuery, variables)
+  httpclient.request(approveOrderQuery, variables)
   .then(data => {
       console.log("order approved");
   })
@@ -57,13 +68,14 @@ function run() {
 
   const subscriber = Hasura.subscribe(client, subscribeOrdersQuery, variables, dataKey);
   subscriber.start();
-  subscriber.events.on('data', eventData => {
+  var obs = subscriber.executable.subscribe(eventData => {
       console.log("got event");
       var data = eventData.data;
       console.log(JSON.stringify(data, null, 2));
       var order_id = data.order_id;
       setTimeout(approve, 5000, order_id);
   });
+  subscriber.setObservable(obs);
 }
 
 run();

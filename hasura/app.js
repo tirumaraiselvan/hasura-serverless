@@ -6,24 +6,26 @@ const express = require('express');
 const app = express();
 const fs = require('fs');
 
+const ws = require('ws');
+const { SubscriptionClient } = require('subscriptions-transport-ws');
+
 // Google pubsub client init
 const projectId = 'danava-test';
 const pubsubClient = new PubSub({
     projectId: projectId,
 });
 
-const httpurl = process.env.HASURA_HTTP_URL;
+const wsurl = process.env.HASURA_WEBSOCKET_URL;
 
-// Graphql client init
-const client = new GraphQLClient(httpurl, {
-    headers: {
-        Authorization: 'Bearer my-jwt-token',
-    },
-});
+console.log(wsurl);
+
+const client = new SubscriptionClient(
+    wsurl, {reconnect: true}, ws
+);
 
 
 const subscribeLiveQueries= `
-query {
+subscription livequeries {
   subscriptions {
     id
     query
@@ -55,35 +57,36 @@ function publishEvent(payload, topic){
 function watchNewSubscription() {
     var dataKey = "subscriptions";
     var variables = {};
-    const liveQuerySubscriber = Hasura.subscribe(client, subscribeLiveQueries, variables, dataKey);
-    liveQuerySubscriber.start();
-    liveQuerySubscriber.events.on('data', eventData => {
+    const subscriptionsSubscriber = Hasura.subscribe(client, subscribeLiveQueries, variables, dataKey);
+    subscriptionsSubscriber.start();
+    var obs = subscriptionsSubscriber.executable.subscribe(eventData => {
         console.log("got event");
-        var batchId = eventData.batchId;
-        if (batchId != currentBatchId){
-            console.log("clearing existing subscriptions");
-            subscribers.forEach(function(sub){
-                sub.end();
-            });
-            currentBatchId = batchId;
-        }
-        var data = eventData.data;
-        console.log("adding subscription with id: ", data.id);
-        var dataKey = data.data_key;
-        var query  = data.query;
-        var variables = {};
-        var topicName = data.topic_name;
-
-        var subscriber = Hasura.subscribe(client, query, variables, dataKey);
-        subscriber.start();
-        subscriber.events.on('data', eventData => {
-            console.log("got event");
-            var data = eventData.data;
-            console.log(JSON.stringify(data, null, 2));
-            publishEvent(data, topicName);
+        console.log(JSON.stringify(eventData, null, 2));
+        console.log("Clearing existing subscriptions");
+        subscribers.forEach(function(sub){
+            sub.end();
         });
-        subscribers.push(subscriber);
+        eventData.data[dataKey].forEach(sub => {
+            console.log("adding subscription with id: ", sub.id);
+            var dataKey = sub.data_key;
+            var query  = sub.query;
+            var variables = {};
+            var topicName = sub.topic_name;
+
+            var subscriber = Hasura.subscribe(client, query, variables, dataKey);
+            subscriber.start();
+            var obs = subscriber.executable.subscribe(eventData => {
+                console.log("got event");
+                console.log(JSON.stringify(eventData, null, 2));
+                eventData.data[dataKey].forEach(data => {
+                    publishEvent(data, topicName);
+                });
+            });
+            subscriber.setObservable(obs);
+            subscribers.push(subscriber);
+        });
     });
+    subscriptionsSubscriber.setObservable(obs);
 }
 
 if(process.env.GOOGLE_APPLICATION_CREDENTIALS_CONTENTS) {
@@ -94,6 +97,7 @@ if(process.env.GOOGLE_APPLICATION_CREDENTIALS_CONTENTS) {
       }
       console.log("Google Application Credentials file saved!");
       process.env.GOOGLE_APPLICATION_CREDENTIALS="credentials.json";
+      return true;
   });
 }
 
