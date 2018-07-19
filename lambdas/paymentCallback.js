@@ -1,7 +1,7 @@
 const { GraphQLClient } = require('graphql-request');
 
 // Graphql client init
-const client = new GraphQLClient('http://35.232.191.22/v1alpha1/graphql', {
+const client = new GraphQLClient(process.env.HASURA_HTTP_URL, {
     headers: {
         Authorization: 'Bearer my-jwt-token',
     },

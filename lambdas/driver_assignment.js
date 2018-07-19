@@ -3,7 +3,7 @@ const { GraphQLClient } = require('graphql-request');
 const drivers = [95, 96, 97, 98, 99, 100];
 
 // Graphql client init
-const client = new GraphQLClient('http://35.232.191.22/v1alpha1/graphql', {
+const client = new GraphQLClient(process.env.HASURA_HTTP_URL, {
     headers: {
         Authorization: 'Bearer my-jwt-token',
     },
@@ -41,7 +41,7 @@ function assignDriver(order_id, driver_id){
           console.log(JSON.stringify(data, null, 2));
       })
       .catch(err => {
-          console.log("error assigning order");
+          console.log("error assigning driver");
       });
 }
 

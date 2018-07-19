@@ -2,7 +2,7 @@ const { GraphQLClient } = require('graphql-request');
 const request = require('request');
 
 // Graphql client init
-const client = new GraphQLClient('http://35.232.191.22/v1alpha1/graphql', {
+const client = new GraphQLClient(process.env.HASURA_HTTP_URL, {
     headers: {
         Authorization: 'Bearer my-jwt-token',
     },
@@ -32,6 +32,19 @@ function postToPaymentGateway(payload){
 }
 
 exports.paymentHandler = (req, res) => {
+    if (req.method == "OPTIONS") {
+      res.set('Access-Control-Allow-Origin', '*');
+      res.set('Access-Control-Allow-Methods', 'GET, POST');
+      res.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+      res.status(200).send("hello");
+      return;
+    }
+    res.set("Access-Control-Allow-Origin", "*");
+    res.set("Access-Control-Allow-Methods", "GET, POST");
+    res.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+
+    console.log(req.body);
+
     var variables = {
         order_id: req.body.order_id,
         amount: req.body.metadata.amount,
