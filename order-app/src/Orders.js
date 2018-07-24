@@ -1,9 +1,9 @@
 import React from 'react';
-import {Table} from 'react-bootstrap';
+import {Table, Button} from 'react-bootstrap';
 
 import {Link} from "react-router-dom";
 import gql from "graphql-tag";
-import {Subscription} from "react-apollo";
+import {Mutation, Subscription} from "react-apollo";
 import getStatus from './GetStatus';
 
 const GET_ORDERS = gql`
@@ -19,9 +19,48 @@ const GET_ORDERS = gql`
   }
 `;
 
+const PAY_ALL = gql`
+  mutation payAll($userid: String!) {
+    update_orders(_set: {payment_valid: true, placed: true}, where: {
+      user_id: {_eq: $userid},
+      _or: [
+        {payment_valid: {_is_null: true}},
+        {placed: {_eq: false}}
+      ]}) {
+      affected_rows
+    }
+  }
+`;
+
+
 const Orders = ({username}) => (
   <div>
     <h2>Your orders </h2>
+    <hr/>
+    <Mutation mutation={PAY_ALL}>
+      {(payAll, {loading, error, data}) => {
+        if (loading) {
+          return (<span><Button bsStyle="warning" disabled>Loading...</Button>&nbsp;&nbsp;</span>);
+        }
+        if (error) {
+          return (<span><Button bsStyle="warning" >Try again: {error.toString()}</Button>&nbsp;&nbsp;</span>);
+        }
+        return (
+          <span>
+            <Button
+              bsStyle="warning"
+              onClick={(e) => {
+                payAll({
+                  variables: {
+                    userid: username
+                  }})
+              }}>
+              {data ? (data.update_orders.affected_rows + ' paid!') : 'Pay all'}
+            </Button>&nbsp;&nbsp;
+          </span>
+        );
+      }}
+    </Mutation>
     <hr/>
     <Subscription
       subscription={GET_ORDERS} variables={{user: username}}>

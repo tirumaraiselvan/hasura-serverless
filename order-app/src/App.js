@@ -69,10 +69,11 @@ const Home = ({username, onChange, onClick, logout}) => {
         <Jumbotron>
           <h1>Hi! {username} <span role="img" aria-label="emoji">🤓</span></h1>
         </Jumbotron>
-        <Orders username={username} />
         <Link to="/place-order"><Button bsStyle="primary">Place new order</Button></Link>
-        <hr/>
+        &nbsp; &nbsp;
         <Button bsStyle="danger" onClick={logout}>Logout</Button>
+        <hr/>
+        <Orders username={username} />
       </Grid>
     );
   } else {

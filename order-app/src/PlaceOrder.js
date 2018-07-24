@@ -158,7 +158,7 @@ class PlaceOrder extends React.Component {
                   }));
 
                 const username = this.props.username;
-                const orders = [...Array(10).keys()].map(() => ({
+                const orders = [...Array(1000).keys()].map(() => ({
                   order_id: uuidv1(),
                   user_id: username,
                   address: "my-address",
@@ -185,7 +185,7 @@ class PlaceOrder extends React.Component {
                             orders: orders
                           }})
                       }}>
-                      Order 10 times
+                      Order 1000 times
                     </Button>&nbsp;&nbsp;
                   </span>
                 );
