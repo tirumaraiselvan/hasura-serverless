@@ -54,7 +54,7 @@ var chartData = {
             pointStrokeColor: "#fff",
             pointHighlightFill: "#fff",
             pointHighlightStroke: "rgba(200,50,100,1)",
-            data: [5,5]
+            data: []
         },
         {
             label: "Validated",
@@ -64,7 +64,7 @@ var chartData = {
             pointStrokeColor: "#fff",
             pointHighlightFill: "#fff",
             pointHighlightStroke: "rgba(150,100,100,1)",
-            data: [4,4]
+            data: []
         },
         {
             label: "Paid",
@@ -74,7 +74,7 @@ var chartData = {
             pointStrokeColor: "#fff",
             pointHighlightFill: "#fff",
             pointHighlightStroke: "rgba(100,150,100,1)",
-            data: [3,3]
+            data: []
         },
         {
             label: "Approved",
@@ -84,7 +84,7 @@ var chartData = {
             pointStrokeColor: "#fff",
             pointHighlightFill: "#fff",
             pointHighlightStroke: "rgba(50,200,100,1)",
-            data: [2,2]
+            data: []
         },
         {
             label: "Assigned",
@@ -94,7 +94,7 @@ var chartData = {
             pointStrokeColor: "#fff",
             pointHighlightFill: "#fff",
             pointHighlightStroke: "rgba(0,200,100,1)",
-            data: [1,1]
+            data: []
         }
     ]
 };
