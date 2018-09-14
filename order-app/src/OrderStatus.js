@@ -7,14 +7,13 @@ import {Subscription} from "react-apollo";
 import getStatus from './GetStatus';
 
 const GET_ORDERS = gql`
-  subscription fetch_orders($user: String!, $order_id: String! ) {
-    orders(where: {user_id: {_eq: $user}, order_id: {_eq: $order_id}}, order_by: created_asc) {
-      order_id
-      order_valid
-      payment_valid
-      approved
-      driver_assigned
-      created
+  subscription fetch_orders($user: String!, $order_id: uuid! ) {
+    order(where: {user_name: {_eq: $user}, id: {_eq: $order_id}}, order_by: created_at_asc) {
+      id
+      created_at
+      validation {
+        is_validated
+      }
     }
   }
 `;
@@ -28,12 +27,12 @@ const OrderStatus = ({username, orderId}) => {
           subscription={GET_ORDERS} variables={{user: username, order_id: orderId}}>
           {({loading, error, data}) => {
             if (loading) return "Loading...";
-            if (error) return `Error!: ${error}`;
+            if (error) return `Error!: ${JSON.stringify(error)}`;
             console.log(data);
-            if (data.orders.length === 0) {
+            if (data.order.length === 0) {
               return "No such order id."
             } else {
-              const o = data.orders[0];
+              const o = data.order[0];
               return (
                 <div>
                   <Table striped hover bordered responsive>
@@ -42,7 +41,7 @@ const OrderStatus = ({username, orderId}) => {
                         <td>Created: </td>
                         <td>
                           {
-                            (new Date(o.created)).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
+                            (new Date(o.created_at)).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
                           }
                         </td>
                       </tr>
@@ -51,7 +50,7 @@ const OrderStatus = ({username, orderId}) => {
                           Id:
                         </td>
                         <td>
-                          <Link to={'/'}>{o.order_id}</Link>
+                          <Link to={`/order/${o.id}`}>{o.id}</Link>
                         </td>
                       </tr>
                       <tr>
@@ -59,7 +58,7 @@ const OrderStatus = ({username, orderId}) => {
                           Status:
                         </td>
                         <td>
-                          {getStatus(o)}
+                          { getStatus(o) }
                         </td>
                       </tr>
                     </tbody>
@@ -122,7 +121,7 @@ class MakePayment extends React.Component {
   }
 
   render () {
-    if (!this.props.order.order_valid) {
+    if (!(this.props.order.validation && this.props.order.validation.is_validated)) {
       return (
         <Button bsStyle="primary" disabled>Waiting to make payment...</Button>
       )

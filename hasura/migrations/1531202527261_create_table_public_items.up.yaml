@@ -1,8 +1,0 @@
-- args:
-    sql: CREATE TABLE public."items"("id" serial NOT NULL, "order_id" text NOT NULL,
-      "item" text NOT NULL, PRIMARY KEY ("id") )
-  type: run_sql
-- args:
-    name: items
-    schema: public
-  type: add_existing_table_or_view

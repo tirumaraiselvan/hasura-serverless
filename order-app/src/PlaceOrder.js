@@ -8,29 +8,33 @@ const uuidv1 = require('uuid/v1');
 
 const GET_ITEMS= gql`
   query fetch_items {
-    menu_items (order_by: name_asc) {
+    item (order_by: name_asc) {
+      id
       name
     }
   }
 `;
 
 const PLACE_ORDER = gql`
-  mutation ($uuid: String!, $items: [items_insert_input!]!, $user_id: String!) {
-    insert_orders(objects: [
-      {
-        order_id: $uuid
-        user_id: $user_id
-        address: "my-address"
-        restaurant_id: 1
-      }]) {
+  mutation (
+    $uuid: uuid!,
+    $order_items: [order_item_insert_input!]!,
+    $user_name: String!
+  ) {
+    insert_order(objects: [{
+      id: $uuid
+      user_name: $user_name
+    }]) {
       returning {
-        order_id
+        id
+        created_at
       }
     },
 
-    insert_items(objects: $items) {
+    insert_order_item(objects: $order_items) {
       returning {
-        id
+        order_id
+        item_id
       }
     }
   }
@@ -69,10 +73,10 @@ class PlaceOrder extends React.Component {
     this.setState({ordered: true});
   }
 
-  handleChanged (item_name) {
+  handleChanged (item_id) {
     const _this = this;
     return ((e) => {
-      _this.setState({items: {..._this.state.items, [item_name]: e.target.checked}});
+      _this.setState({items: {..._this.state.items, [item_id]: e.target.checked}});
     });
   }
 
@@ -91,8 +95,8 @@ class PlaceOrder extends React.Component {
               {({loading, error, data}) => {
                 if (loading) return "Loading items...";
                 if (error) return `Error!: ${error}`;
-                return data.menu_items.map((item, i) => (
-                  <Checkbox key={i} onChange={this.handleChanged(item.name)}>{item.name}</Checkbox>
+                return data.item.map((item, i) => (
+                  <Checkbox key={i} onChange={this.handleChanged(item.id)}>{item.name}</Checkbox>
                 ));
               }}
             </Query>
@@ -113,7 +117,7 @@ class PlaceOrder extends React.Component {
                 )).map((item) => (
                   {
                     order_id: this.state.uuid,
-                    item
+                    item_id: item
                   }));
 
                 return (
@@ -128,8 +132,8 @@ class PlaceOrder extends React.Component {
                         placeOrder({
                           variables: {
                             uuid: this.state.uuid,
-                            items,
-                            user_id: this.props.username
+                            order_items: items,
+                            user_name: this.props.username
                           }})
                       }}>
                       Order

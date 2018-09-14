@@ -1,8 +1,0 @@
-- args:
-    sql: CREATE TABLE public."assignment"("order_id" text NOT NULL, "driver_id" integer
-      NOT NULL, PRIMARY KEY ("order_id") )
-  type: run_sql
-- args:
-    name: assignment
-    schema: public
-  type: add_existing_table_or_view

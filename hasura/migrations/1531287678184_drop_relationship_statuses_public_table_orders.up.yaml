@@ -1,6 +1,0 @@
-- args:
-    relationship: statuses
-    table:
-      name: orders
-      schema: public
-  type: drop_relationship

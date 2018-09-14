@@ -8,13 +8,12 @@ import getStatus from './GetStatus';
 
 const GET_ORDERS = gql`
   subscription fetch_orders($user: String!) {
-    orders(where: {user_id: {_eq: $user}}, order_by: created_asc) {
-      order_id
-      order_valid
-      payment_valid
-      approved
-      driver_assigned
-      created
+    order(where: {user_name: {_eq: $user}}, order_by: created_at_asc) {
+      id
+      created_at
+      validation {
+        is_validated
+      }
     }
   }
 `;
@@ -66,19 +65,19 @@ const Orders = ({username}) => (
       subscription={GET_ORDERS} variables={{user: username}}>
       {({loading, error, data}) => {
         if (loading) return "Loading...";
-        if (error) return `Error!: ${error}`;
-        if (data.orders.length === 0) {
+        if (error) return `Error!: ${JSON.stringify(error)}`;
+        if (data.order.length === 0) {
           return "No orders yet."
         } else {
-          const orders = data.orders.map((o, i) => (
+          const orders = data.order.map((o, i) => (
             <tr key={i}>
               <td>
                 {
-                  (new Date(o.created)).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
+                  (new Date(o.created_at)).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
                 }
               </td>
               <td>
-                <Link to={'/order/'+o.order_id}>{o.order_id}</Link>
+                <Link to={'/order/'+o.id}>{o.id}</Link>
               </td>
               <td>
                 {getStatus(o)}

@@ -1,8 +1,0 @@
-- args:
-    sql: CREATE TABLE public."menu_items"("name" text NOT NULL, PRIMARY KEY ("name")
-      )
-  type: run_sql
-- args:
-    name: menu_items
-    schema: public
-  type: add_existing_table_or_view

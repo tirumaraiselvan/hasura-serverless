@@ -1,6 +1,0 @@
-- args:
-    sql: ALTER TABLE public."orders" ALTER COLUMN "order_validated" DROP DEFAULT;
-  type: run_sql
-- args:
-    sql: ALTER TABLE public."orders" ALTER COLUMN "order_validated" DROP NOT NULL;
-  type: run_sql

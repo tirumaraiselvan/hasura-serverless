@@ -1,3 +1,0 @@
-- args:
-    sql: ALTER TABLE public."orders" DROP COLUMN "validated"
-  type: run_sql

@@ -1,3 +1,0 @@
-- args:
-    sql: ALTER TABLE public."status" DROP CONSTRAINT "status_order_id_fkey"
-  type: run_sql
