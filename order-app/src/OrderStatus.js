@@ -14,6 +14,15 @@ const GET_ORDERS = gql`
       validation {
         is_validated
       }
+      payment {
+        is_success
+      }
+      restaurant_approval {
+        is_approved
+      }
+      agent_assignment {
+        is_assigned
+      }
     }
   }
 `;
@@ -92,7 +101,7 @@ class MakePayment extends React.Component {
   onClick () {
     this.setState({loading: true});
     const _this = this;
-    fetch('https://us-central1-danava-test.cloudfunctions.net/payment',
+    fetch('https://us-central1-hasura-serverless.cloudfunctions.net/make_payment',
       {
         method: 'POST',
         headers: {
@@ -108,7 +117,7 @@ class MakePayment extends React.Component {
             amount: 500,
             type: 'credit_card'
           },
-          order_id: this.state.order.order_id
+          order_id: this.state.order.id
         })
       })
     .then(res => res.json())
@@ -127,7 +136,7 @@ class MakePayment extends React.Component {
       )
     }
 
-    if (this.props.order.payment_valid) {
+    if (this.props.order.payment && this.props.order.payment.is_success) {
       return (
         null
       )

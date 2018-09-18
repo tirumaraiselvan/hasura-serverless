@@ -14,52 +14,77 @@ const GET_ORDERS = gql`
       validation {
         is_validated
       }
+      payment {
+        is_success
+      }
+      restaurant_approval {
+        is_approved
+      }
+      agent_assignment {
+        is_assigned
+      }
     }
   }
 `;
 
-const PAY_ALL = gql`
-  mutation payAll($userid: String!) {
-    update_orders(_set: {payment_valid: true, placed: true}, where: {
-      user_id: {_eq: $userid},
-      _or: [
-        {payment_valid: {_is_null: true}},
-        {placed: {_eq: false}}
-      ]}) {
-      affected_rows
+class MakeAllPayment  extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      paymentDone: null,
+      loading: null,
+      username: props.username,
+      error: null,
+      message: null
     }
+    this.onClick = this.onClick.bind(this);
   }
-`;
 
+  onClick () {
+    this.setState({loading: true , ...this.state});
+    const _this = this;
+    fetch('https://us-central1-hasura-serverless.cloudfunctions.net/pay_all',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              user_name: this.state.username
+            })
+          })
+      .then(res => res.json())
+      .catch(err => {
+        _this.setState({loading: false, error: err.toString(), ..._this.state});
+      })
+      .then(response => {
+        _this.setState({paymentDone: true, loading: false, message: response.message, ..._this.state});
+      });
+  }
+
+  render() {
+    if (this.state.loading) {
+      return (<Button bsStyle="warning" disabled>Loading...</Button>);
+    }
+    if (this.state.error) {
+      return (<Button bsStyle="warning" >Try again: {this.state.error.toString()}</Button>);
+    }
+    return (
+      <Button
+        bsStyle="warning"
+        onClick={this.onClick}
+      >
+        {this.state.paymentDone ? 'Paid!' : 'Pay all'}
+      </Button>
+    );
+  }
+}
 
 const Orders = ({username}) => (
   <div>
     <h2>Your orders </h2>
     <hr/>
-    <Mutation mutation={PAY_ALL}>
-      {(payAll, {loading, error, data}) => {
-        if (loading) {
-          return (<span><Button bsStyle="warning" disabled>Loading...</Button>&nbsp;&nbsp;</span>);
-        }
-        if (error) {
-          return (<span><Button bsStyle="warning" >Try again: {error.toString()}</Button>&nbsp;&nbsp;</span>);
-        }
-        return (
-          <span>
-            <Button
-              bsStyle="warning"
-              onClick={(e) => {
-                payAll({
-                  variables: {
-                    userid: username
-                  }})
-              }}>
-              {data ? (data.update_orders.affected_rows + ' paid!') : 'Pay all'}
-            </Button>&nbsp;&nbsp;
-          </span>
-        );
-      }}
-    </Mutation>
+    <MakeAllPayment username />
     <hr/>
     <Subscription
       subscription={GET_ORDERS} variables={{user: username}}>

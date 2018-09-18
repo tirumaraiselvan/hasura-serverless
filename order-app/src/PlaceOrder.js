@@ -40,18 +40,16 @@ const PLACE_ORDER = gql`
   }
 `;
 
-const PLACE_10_ORDER = gql`
-  mutation ($orders: [orders_insert_input!]!, $items: [items_insert_input!]!) {
-    insert_orders(objects: $orders) {
-      returning {
-        order_id
-      }
-    },
-
-    insert_items(objects: $items) {
+const PLACE_MANY_ORDERS = gql`
+  mutation ($orders: [order_insert_input!]!, $items: [order_item_insert_input!]!) {
+    insert_order(objects: $orders) {
       returning {
         id
       }
+    },
+
+    insert_order_item(objects: $items) {
+      affected_rows
     }
   }
 `;
@@ -142,7 +140,7 @@ class PlaceOrder extends React.Component {
                 );
               }}
             </Mutation>
-            <Mutation mutation={PLACE_10_ORDER}>
+            <Mutation mutation={PLACE_MANY_ORDERS}>
               {(placeOrder, {loading, error, data}) => {
                 if (data) {
                   this.props.routeProps.history.push('/');
@@ -164,14 +162,12 @@ class PlaceOrder extends React.Component {
                 const username = this.props.username;
                 const orders = [...Array(1000).keys()].map(() => ({
                   order_id: uuidv1(),
-                  user_id: username,
-                  address: "my-address",
-                  restaurant_id: 1
+                  user_name: username
                 }));
                 let all_items = orders.map((o) => (
                   items.map((i) => ({
                     order_id: o.order_id,
-                    item: i.item
+                    item_id: i.item
                   }))));
                 all_items = [].concat.apply([], all_items);
                 return (
