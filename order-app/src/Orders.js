@@ -8,7 +8,7 @@ import getStatus from './GetStatus';
 
 const GET_ORDERS = gql`
   subscription fetch_orders($user: String!) {
-    order(where: {user_name: {_eq: $user}}, order_by: created_at_asc) {
+    order(where: {user_name: {_eq: $user}}, order_by: created_at_desc, limit: 20) {
       id
       created_at
       validation {
@@ -84,7 +84,7 @@ const Orders = ({username}) => (
   <div>
     <h2>Your orders </h2>
     <hr/>
-    <MakeAllPayment username />
+    <MakeAllPayment username={username} />
     <hr/>
     <Subscription
       subscription={GET_ORDERS} variables={{user: username}}>

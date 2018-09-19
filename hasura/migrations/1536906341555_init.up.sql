@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 10.4 (Ubuntu 10.4-2.pgdg14.04+1)
+-- Dumped from database version 10.5 (Ubuntu 10.5-1.pgdg14.04+1)
 -- Dumped by pg_dump version 10.5 (Ubuntu 10.5-0ubuntu0.18.04)
 
 SET statement_timeout = 0;
@@ -19,94 +19,70 @@ SET default_tablespace = '';
 
 SET default_with_oids = false;
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
+
 --
--- Name: assignment; Type: TABLE; Schema: public; Owner: -
+-- Name: agent_assignment; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.assignment (
-    order_id text NOT NULL,
-    driver_id integer NOT NULL
+CREATE TABLE public.agent_assignment (
+    order_id uuid NOT NULL,
+    agent_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    is_assigned boolean DEFAULT false NOT NULL
 );
 
 
 --
--- Name: items; Type: TABLE; Schema: public; Owner: -
+-- Name: item; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.items (
-    id integer NOT NULL,
-    order_id text NOT NULL,
-    item text NOT NULL
-);
-
-
---
--- Name: items_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.items_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: items_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.items_id_seq OWNED BY public.items.id;
-
-
---
--- Name: menu_items; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.menu_items (
+CREATE TABLE public.item (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     name text NOT NULL
 );
 
 
 --
--- Name: orders; Type: TABLE; Schema: public; Owner: -
+-- Name: order; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.orders (
-    order_id text NOT NULL,
-    user_id text NOT NULL,
-    restaurant_id integer NOT NULL,
-    address text NOT NULL,
-    placed boolean DEFAULT false NOT NULL,
-    approved boolean DEFAULT false NOT NULL,
-    driver_assigned boolean DEFAULT false NOT NULL,
-    food_picked boolean DEFAULT false NOT NULL,
-    delivered boolean DEFAULT false NOT NULL,
-    order_valid boolean DEFAULT false,
-    payment_valid boolean,
-    created timestamp with time zone DEFAULT now() NOT NULL
+CREATE TABLE public."order" (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    user_name text NOT NULL
 );
 
 
 --
--- Name: number_order_approved; Type: VIEW; Schema: public; Owner: -
+-- Name: number_order; Type: VIEW; Schema: public; Owner: -
 --
 
-CREATE VIEW public.number_order_approved AS
+CREATE VIEW public.number_order AS
  SELECT count(*) AS count
-   FROM public.orders
-  WHERE (orders.approved = true);
+   FROM public."order";
 
 
 --
--- Name: number_order_driver_assigned; Type: VIEW; Schema: public; Owner: -
+-- Name: number_order_agent_assigned; Type: VIEW; Schema: public; Owner: -
 --
 
-CREATE VIEW public.number_order_driver_assigned AS
+CREATE VIEW public.number_order_agent_assigned AS
  SELECT count(*) AS count
-   FROM public.orders
-  WHERE (orders.driver_assigned = true);
+   FROM public.agent_assignment;
+
+
+--
+-- Name: payment; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.payment (
+    order_id uuid NOT NULL,
+    type text NOT NULL,
+    amount numeric NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    is_success boolean DEFAULT false NOT NULL
+);
 
 
 --
@@ -115,8 +91,39 @@ CREATE VIEW public.number_order_driver_assigned AS
 
 CREATE VIEW public.number_order_payment_valid AS
  SELECT count(*) AS count
-   FROM public.orders
-  WHERE (orders.payment_valid = true);
+   FROM public.payment;
+
+
+--
+-- Name: restaurant_approval; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.restaurant_approval (
+    order_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    is_approved boolean DEFAULT false NOT NULL
+);
+
+
+--
+-- Name: number_order_restaurant_approved; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.number_order_restaurant_approved AS
+ SELECT count(*) AS count
+   FROM public.restaurant_approval;
+
+
+--
+-- Name: order_validation; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.order_validation (
+    order_id uuid NOT NULL,
+    is_validated boolean DEFAULT false NOT NULL,
+    validated_at timestamp with time zone DEFAULT now() NOT NULL,
+    reason text
+);
 
 
 --
@@ -125,127 +132,105 @@ CREATE VIEW public.number_order_payment_valid AS
 
 CREATE VIEW public.number_order_validated AS
  SELECT count(*) AS count
-   FROM public.orders
-  WHERE (orders.order_valid = true);
+   FROM public.order_validation;
 
 
 --
--- Name: number_orders; Type: VIEW; Schema: public; Owner: -
+-- Name: order_item; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE VIEW public.number_orders AS
- SELECT count(*) AS count
-   FROM public.orders;
-
-
---
--- Name: payments; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.payments (
-    id integer NOT NULL,
-    order_id text NOT NULL,
-    type text NOT NULL,
-    amount integer NOT NULL
+CREATE TABLE public.order_item (
+    order_id uuid NOT NULL,
+    item_id uuid NOT NULL
 );
 
 
 --
--- Name: payments_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: agent_assignment agent_assignment_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE public.payments_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+ALTER TABLE ONLY public.agent_assignment
+    ADD CONSTRAINT agent_assignment_pkey PRIMARY KEY (order_id);
 
 
 --
--- Name: payments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: item item_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE public.payments_id_seq OWNED BY public.payments.id;
-
-
---
--- Name: items id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.items ALTER COLUMN id SET DEFAULT nextval('public.items_id_seq'::regclass);
+ALTER TABLE ONLY public.item
+    ADD CONSTRAINT item_pkey PRIMARY KEY (id);
 
 
 --
--- Name: payments id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: order_item order_item_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.payments ALTER COLUMN id SET DEFAULT nextval('public.payments_id_seq'::regclass);
-
-
---
--- Name: assignment assignment_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.assignment
-    ADD CONSTRAINT assignment_pkey PRIMARY KEY (order_id);
+ALTER TABLE ONLY public.order_item
+    ADD CONSTRAINT order_item_pkey PRIMARY KEY (order_id, item_id);
 
 
 --
--- Name: items items_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: order order_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.items
-    ADD CONSTRAINT items_pkey PRIMARY KEY (id);
-
-
---
--- Name: menu_items menu_items_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.menu_items
-    ADD CONSTRAINT menu_items_pkey PRIMARY KEY (name);
+ALTER TABLE ONLY public."order"
+    ADD CONSTRAINT order_pkey PRIMARY KEY (id);
 
 
 --
--- Name: orders orders_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: order_validation order_validation_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.orders
-    ADD CONSTRAINT orders_pkey PRIMARY KEY (order_id);
-
-
---
--- Name: payments payments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.payments
-    ADD CONSTRAINT payments_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.order_validation
+    ADD CONSTRAINT order_validation_pkey PRIMARY KEY (order_id);
 
 
 --
--- Name: assignment assignment_order_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: payment payment_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.assignment
-    ADD CONSTRAINT assignment_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(order_id);
-
-
---
--- Name: items items_order_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.items
-    ADD CONSTRAINT items_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(order_id);
+ALTER TABLE ONLY public.payment
+    ADD CONSTRAINT payment_pkey PRIMARY KEY (order_id);
 
 
 --
--- Name: payments payments_order_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: restaurant_approval restaurant_approval_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.payments
-    ADD CONSTRAINT payments_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(order_id);
+ALTER TABLE ONLY public.restaurant_approval
+    ADD CONSTRAINT restaurant_approval_pkey PRIMARY KEY (order_id);
+
+
+--
+-- Name: agent_assignment agent_assignment_order_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.agent_assignment
+    ADD CONSTRAINT agent_assignment_order_id_fkey FOREIGN KEY (order_id) REFERENCES public."order"(id);
+
+
+--
+-- Name: order_validation order_validation_order_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.order_validation
+    ADD CONSTRAINT order_validation_order_id_fkey FOREIGN KEY (order_id) REFERENCES public."order"(id);
+
+
+--
+-- Name: payment payment_order_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payment
+    ADD CONSTRAINT payment_order_id_fkey FOREIGN KEY (order_id) REFERENCES public."order"(id);
+
+
+--
+-- Name: restaurant_approval restaurant_approval_order_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.restaurant_approval
+    ADD CONSTRAINT restaurant_approval_order_id_fkey FOREIGN KEY (order_id) REFERENCES public."order"(id);
 
 
 --

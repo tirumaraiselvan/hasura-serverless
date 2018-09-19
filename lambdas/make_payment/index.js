@@ -9,10 +9,12 @@ const HGE_ENDPOINT = process.env.HGE_ENDPOINT || 'https://hge-et-demo.herokuapp.
 
 const MUTATION_INSERT_PAYMENT = `
 mutation processPayment($object: payment_insert_input!) {
-  insert_payment(objects:[$object]) {
+  insert_payment(objects:[$object], on_conflict: {
+    action: ignore,
+    constraint: payment_pkey
+  }) {
     affected_rows
     returning {
-      id
       created_at
     }
   }

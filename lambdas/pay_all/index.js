@@ -17,7 +17,6 @@ mutation makePayment($objects: [payment_insert_input!]!) {
   insert_payment(objects:$objects) {
     affected_rows
     returning {
-      id
       created_at
     }
   }
@@ -73,7 +72,8 @@ exports.function = async (req, res) => {
     objects.push({
       order_id: id,
       type: 'credit_card',
-      amount: 500
+      amount: 500,
+      is_success: true
     });
   });
 

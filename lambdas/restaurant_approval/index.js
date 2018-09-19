@@ -5,9 +5,14 @@ const MUTATION_RESTAURANT_APPROVAL = `
 mutation restaurantApproval(
   $object: restaurant_approval_insert_input!
 ) {
-  insert_restaurant_approval(objects: [$object]) {
+  insert_restaurant_approval(
+    objects: [$object],
+    on_conflict: {
+      action: ignore,
+      constraint: restaurant_approval_pkey
+    }
+) {
     returning {
-      id
       created_at
     }
     affected_rows
@@ -65,6 +70,6 @@ const restaurant_approval = (id) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       resolve(true);
-    }, 5000);
+    }, 10);
   });
 };

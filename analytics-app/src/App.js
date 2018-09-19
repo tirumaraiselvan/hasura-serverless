@@ -5,42 +5,7 @@ import gql from "graphql-tag";
 import {Subscription } from "react-apollo";
 
 import { ApolloProvider } from "react-apollo";
-import ApolloClient from "apollo-client";
-import { InMemoryCache } from 'apollo-cache-inmemory';
-import { WebSocketLink } from 'apollo-link-ws';
-import { HttpLink } from 'apollo-link-http';
-import { split } from 'apollo-link';
-import { getMainDefinition } from 'apollo-utilities';
-
-
-const wsurl = process.env.REACT_APP_HASURA_WEBSOCKET_URL
-const httpurl = process.env.REACT_APP_HASURA_HTTP_URL
-
-const wsLink = new WebSocketLink({
-  uri: wsurl,
-  options: {
-    reconnect: true
-  }
-});
-const httpLink = new HttpLink({
-  uri: httpurl,
-});
-
-const link = split(
-  // split based on operation type
-  ({ query }) => {
-    const { kind, operation } = getMainDefinition(query);
-    return kind === 'OperationDefinition' && operation === 'subscription';
-  },
-  wsLink,
-  httpLink,
-)
-
-const client = new ApolloClient({
-  link,
-  cache: new InMemoryCache()
-});
-
+import client from './apollo';
 
 var LineChart = require("react-chartjs").Line;
 var chartData = {
@@ -107,7 +72,7 @@ class App extends Component {
           <Subscription
             subscription={gql`
               subscription {
-                number_orders {
+                number_order {
                   count
                 }
                 number_order_validated {
@@ -116,10 +81,10 @@ class App extends Component {
                 number_order_payment_valid {
                   count
                 }
-                number_order_approved {
+                number_order_restaurant_approved {
                   count
                 }
-                number_order_driver_assigned {
+                number_order_agent_assigned {
                   count
                 }
               }
@@ -127,13 +92,13 @@ class App extends Component {
 
             {({ loading, error, data }) => {
               if (loading) return <p>Loading...</p>;
-              if (error) return <p>Error :(</p>;
+              if (error) return <p>Error :( {JSON.stringify(error)}</p>;
 
-              chartData.datasets[0].data.push(data.number_orders[0].count);
+              chartData.datasets[0].data.push(data.number_order[0].count);
               chartData.datasets[1].data.push(data.number_order_validated[0].count);
               chartData.datasets[2].data.push(data.number_order_payment_valid[0].count);
-              chartData.datasets[3].data.push(data.number_order_approved[0].count);
-              chartData.datasets[4].data.push(data.number_order_driver_assigned[0].count);
+              chartData.datasets[3].data.push(data.number_order_restaurant_approved[0].count);
+              chartData.datasets[4].data.push(data.number_order_agent_assigned[0].count);
               chartData.labels.push(1);
               return (
                 <LineChart data={chartData}

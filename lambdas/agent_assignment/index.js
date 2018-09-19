@@ -5,9 +5,14 @@ const MUTATION_ASSIGN_AGENT = `
 mutation assignAgent(
   $object: agent_assignment_insert_input!
 ) {
-  insert_agent_assignment(objects: [$object]) {
+  insert_agent_assignment(
+    objects: [$object],
+    on_conflict: {
+      action: ignore,
+      constraint: agent_assignment_pkey
+    }
+) {
     returning {
-      id
       created_at
     }
     affected_rows
@@ -65,7 +70,7 @@ const assign_agent = (order_id) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       resolve({ is_assigned: true, agent_id: newUUID()});
-    }, 5000);
+    }, 10);
   });
 };
 

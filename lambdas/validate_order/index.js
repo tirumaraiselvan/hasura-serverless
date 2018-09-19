@@ -4,8 +4,11 @@ MUTATION_MARK_ORDER_VALIDATED = `
 mutation orderValidated($id: uuid!) {
   insert_order_validation(objects:[{
     is_validated: true,
-    id: $id
-  }]) {
+    order_id: $id
+  }], on_conflict: {
+    action: ignore,
+    constraint: order_validation_pkey
+  }) {
     affected_rows
     returning {
       validated_at
@@ -66,6 +69,6 @@ validate_order = (id) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       resolve(true);
-    }, 5000);
+    }, 10);
   });
 };

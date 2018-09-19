@@ -37,7 +37,6 @@ const OrderStatus = ({username, orderId}) => {
           {({loading, error, data}) => {
             if (loading) return "Loading...";
             if (error) return `Error!: ${JSON.stringify(error)}`;
-            console.log(data);
             if (data.order.length === 0) {
               return "No such order id."
             } else {
