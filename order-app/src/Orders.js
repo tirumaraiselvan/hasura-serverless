@@ -3,7 +3,7 @@ import {Table, Button} from 'react-bootstrap';
 
 import {Link} from "react-router-dom";
 import gql from "graphql-tag";
-import {Mutation, Subscription} from "react-apollo";
+import {Subscription} from "react-apollo";
 import getStatus from './GetStatus';
 
 const GET_ORDERS = gql`

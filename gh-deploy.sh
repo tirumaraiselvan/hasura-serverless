@@ -19,7 +19,7 @@ cd ..
 
 cd order-app
 npm run build
-mv build/* ../tmp/
+mv build ../tmp/order
 cd ..
 
 cd analytics-app
