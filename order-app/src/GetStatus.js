@@ -43,7 +43,13 @@ const createBar = (statusBar) => {
   );
 };
 
-export default ({order_valid, payment_valid, approved, driver_assigned}) => {
+export default ({validation, payment, restaurant_approval, agent_assignment}) => {
+
+  const order_valid = validation && validation.is_validated;
+  const payment_valid = payment && payment.is_success;
+  const approved = restaurant_approval && restaurant_approval.is_approved;
+  const driver_assigned = agent_assignment && agent_assignment.is_assigned;
+
   const statusBar = JSON.parse(JSON.stringify(statuses));
   if (!(order_valid)) {
     statusBar[0].value = 'running';

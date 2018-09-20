@@ -6,15 +6,25 @@ import gql from "graphql-tag";
 import {Subscription} from "react-apollo";
 import getStatus from './GetStatus';
 
+const PUBLIC_URL = process.env.PUBLIC_URL;
+
 const GET_ORDERS = gql`
-  subscription fetch_orders($user: String!, $order_id: String! ) {
-    orders(where: {user_id: {_eq: $user}, order_id: {_eq: $order_id}}, order_by: created_asc) {
-      order_id
-      order_valid
-      payment_valid
-      approved
-      driver_assigned
-      created
+  subscription fetch_orders($user: String!, $order_id: uuid! ) {
+    order(where: {user_name: {_eq: $user}, id: {_eq: $order_id}}, order_by: created_at_asc) {
+      id
+      created_at
+      validation {
+        is_validated
+      }
+      payment {
+        is_success
+      }
+      restaurant_approval {
+        is_approved
+      }
+      agent_assignment {
+        is_assigned
+      }
     }
   }
 `;
@@ -28,12 +38,11 @@ const OrderStatus = ({username, orderId}) => {
           subscription={GET_ORDERS} variables={{user: username, order_id: orderId}}>
           {({loading, error, data}) => {
             if (loading) return "Loading...";
-            if (error) return `Error!: ${error}`;
-            console.log(data);
-            if (data.orders.length === 0) {
+            if (error) return `Error!: ${JSON.stringify(error)}`;
+            if (data.order.length === 0) {
               return "No such order id."
             } else {
-              const o = data.orders[0];
+              const o = data.order[0];
               return (
                 <div>
                   <Table striped hover bordered responsive>
@@ -42,7 +51,7 @@ const OrderStatus = ({username, orderId}) => {
                         <td>Created: </td>
                         <td>
                           {
-                            (new Date(o.created)).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
+                            (new Date(o.created_at)).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
                           }
                         </td>
                       </tr>
@@ -51,7 +60,7 @@ const OrderStatus = ({username, orderId}) => {
                           Id:
                         </td>
                         <td>
-                          <Link to={'/'}>{o.order_id}</Link>
+                          <Link to={`${PUBLIC_URL}/order/${o.id}`}>{o.id}</Link>
                         </td>
                       </tr>
                       <tr>
@@ -59,7 +68,7 @@ const OrderStatus = ({username, orderId}) => {
                           Status:
                         </td>
                         <td>
-                          {getStatus(o)}
+                          { getStatus(o) }
                         </td>
                       </tr>
                     </tbody>
@@ -71,7 +80,7 @@ const OrderStatus = ({username, orderId}) => {
           }}
         </Subscription>
         <hr/>
-        <Link to="/"><Button bsStyle="danger">Back</Button></Link>
+        <Link to={`${PUBLIC_URL}`}><Button bsStyle="danger">Back</Button></Link>
       </div>
     </Grid>
   );
@@ -93,7 +102,7 @@ class MakePayment extends React.Component {
   onClick () {
     this.setState({loading: true});
     const _this = this;
-    fetch('https://us-central1-danava-test.cloudfunctions.net/payment',
+    fetch('https://us-central1-hasura-serverless.cloudfunctions.net/make_payment',
       {
         method: 'POST',
         headers: {
@@ -109,7 +118,7 @@ class MakePayment extends React.Component {
             amount: 500,
             type: 'credit_card'
           },
-          order_id: this.state.order.order_id
+          order_id: this.state.order.id
         })
       })
     .then(res => res.json())
@@ -122,13 +131,13 @@ class MakePayment extends React.Component {
   }
 
   render () {
-    if (!this.props.order.order_valid) {
+    if (!(this.props.order.validation && this.props.order.validation.is_validated)) {
       return (
         <Button bsStyle="primary" disabled>Waiting to make payment...</Button>
       )
     }
 
-    if (this.props.order.payment_valid) {
+    if (this.props.order.payment && this.props.order.payment.is_success) {
       return (
         null
       )

@@ -1,4 +1,0 @@
-- args:
-    sql: ALTER TABLE ONLY public."status" ALTER COLUMN "driver_assigned" SET DEFAULT
-      false;
-  type: run_sql

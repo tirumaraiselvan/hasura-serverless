@@ -1,6 +1,6 @@
 {
-  "name": "order-app",
-  "homepage" : "https://shahidhk.github.io/hasura-serverless/order-app",
+  "name": "analytics-app",
+  "homepage" : "https://shahidhk.github.io/hasura-serverless/analytics-app/",
   "version": "0.1.0",
   "private": true,
   "engines": {
@@ -15,22 +15,18 @@
     "apollo-link-error": "^1.1.0",
     "apollo-link-http": "^1.5.4",
     "apollo-link-ws": "^1.0.8",
-    "bootstrap": "^3.3.7",
+    "chart.js": "^1.1.1",
     "graphql": "^0.13.2",
     "graphql-tag": "^2.9.2",
     "react": "^16.4.1",
     "react-apollo": "^2.1.9",
-    "react-bootstrap": "^0.32.1",
+    "react-chartjs": "^1.2.0",
     "react-dom": "^16.4.1",
-    "react-router-dom": "^4.3.1",
     "react-scripts": "^1.1.5",
-    "serve": "^9.2.0",
-    "subscriptions-transport-ws": "^0.9.12",
-    "uuid": "^3.3.2"
+    "subscriptions-transport-ws": "^0.9.12"
   },
   "scripts": {
     "start": "react-scripts start",
-    "now-start": "serve --single ./build",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"

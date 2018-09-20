@@ -6,48 +6,52 @@ import { Query, Mutation } from "react-apollo";
 
 const uuidv1 = require('uuid/v1');
 
+const PUBLIC_URL = process.env.PUBLIC_URL;
+
 const GET_ITEMS= gql`
   query fetch_items {
-    menu_items (order_by: name_asc) {
+    item (order_by: name_asc) {
+      id
       name
     }
   }
 `;
 
 const PLACE_ORDER = gql`
-  mutation ($uuid: String!, $items: [items_insert_input!]!, $user_id: String!) {
-    insert_orders(objects: [
-      {
-        order_id: $uuid
-        user_id: $user_id
-        address: "my-address"
-        restaurant_id: 1
-      }]) {
+  mutation (
+    $uuid: uuid!,
+    $order_items: [order_item_insert_input!]!,
+    $user_name: String!
+  ) {
+    insert_order(objects: [{
+      id: $uuid
+      user_name: $user_name
+    }]) {
       returning {
-        order_id
+        id
+        created_at
       }
     },
 
-    insert_items(objects: $items) {
+    insert_order_item(objects: $order_items) {
       returning {
-        id
+        order_id
+        item_id
       }
     }
   }
 `;
 
-const PLACE_10_ORDER = gql`
-  mutation ($orders: [orders_insert_input!]!, $items: [items_insert_input!]!) {
-    insert_orders(objects: $orders) {
-      returning {
-        order_id
-      }
-    },
-
-    insert_items(objects: $items) {
+const PLACE_MANY_ORDERS = gql`
+  mutation ($orders: [order_insert_input!]!, $items: [order_item_insert_input!]!) {
+    insert_order(objects: $orders) {
       returning {
         id
       }
+    },
+
+    insert_order_item(objects: $items) {
+      affected_rows
     }
   }
 `;
@@ -69,10 +73,10 @@ class PlaceOrder extends React.Component {
     this.setState({ordered: true});
   }
 
-  handleChanged (item_name) {
+  handleChanged (item_id) {
     const _this = this;
     return ((e) => {
-      _this.setState({items: {..._this.state.items, [item_name]: e.target.checked}});
+      _this.setState({items: {..._this.state.items, [item_id]: e.target.checked}});
     });
   }
 
@@ -91,8 +95,8 @@ class PlaceOrder extends React.Component {
               {({loading, error, data}) => {
                 if (loading) return "Loading items...";
                 if (error) return `Error!: ${error}`;
-                return data.menu_items.map((item, i) => (
-                  <Checkbox key={i} onChange={this.handleChanged(item.name)}>{item.name}</Checkbox>
+                return data.item.map((item, i) => (
+                  <Checkbox key={i} onChange={this.handleChanged(item.id)}>{item.name}</Checkbox>
                 ));
               }}
             </Query>
@@ -100,7 +104,7 @@ class PlaceOrder extends React.Component {
             <Mutation mutation={PLACE_ORDER}>
               {(placeOrder, {loading, error, data}) => {
                 if (data) {
-                  this.props.routeProps.history.push('/order/'+this.state.uuid);
+                  this.props.routeProps.history.push(`${PUBLIC_URL}/order/${this.state.uuid}`);
                 }
                 if (loading) {
                   return (<span><Button bsStyle="primary" disabled>Loading...</Button>&nbsp;&nbsp;</span>);
@@ -113,7 +117,7 @@ class PlaceOrder extends React.Component {
                 )).map((item) => (
                   {
                     order_id: this.state.uuid,
-                    item
+                    item_id: item
                   }));
 
                 return (
@@ -128,8 +132,8 @@ class PlaceOrder extends React.Component {
                         placeOrder({
                           variables: {
                             uuid: this.state.uuid,
-                            items,
-                            user_id: this.props.username
+                            order_items: items,
+                            user_name: this.props.username
                           }})
                       }}>
                       Order
@@ -138,10 +142,10 @@ class PlaceOrder extends React.Component {
                 );
               }}
             </Mutation>
-            <Mutation mutation={PLACE_10_ORDER}>
+            <Mutation mutation={PLACE_MANY_ORDERS}>
               {(placeOrder, {loading, error, data}) => {
                 if (data) {
-                  this.props.routeProps.history.push('/');
+                  this.props.routeProps.history.push(`${PUBLIC_URL}`);
                 }
                 if (loading) {
                   return (<span><Button bsStyle="primary" disabled>Loading...</Button>&nbsp;&nbsp;</span>);
@@ -160,14 +164,12 @@ class PlaceOrder extends React.Component {
                 const username = this.props.username;
                 const orders = [...Array(1000).keys()].map(() => ({
                   order_id: uuidv1(),
-                  user_id: username,
-                  address: "my-address",
-                  restaurant_id: 1
+                  user_name: username
                 }));
                 let all_items = orders.map((o) => (
                   items.map((i) => ({
                     order_id: o.order_id,
-                    item: i.item
+                    item_id: i.item
                   }))));
                 all_items = [].concat.apply([], all_items);
                 return (
@@ -191,7 +193,7 @@ class PlaceOrder extends React.Component {
                 );
               }}
             </Mutation>
-            <Link to="/"><Button bsStyle="danger">Cancel</Button></Link>
+            <Link to={`${PUBLIC_URL}`}><Button bsStyle="danger">Cancel</Button></Link>
           </div>
         </Grid>
       );

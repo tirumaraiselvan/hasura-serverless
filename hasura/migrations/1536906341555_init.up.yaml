@@ -1,0 +1,163 @@
+- type: replace_metadata
+  args:
+    query_templates: []
+    tables:
+    - array_relationships: []
+      delete_permissions: []
+      event_triggers: []
+      insert_permissions: []
+      object_relationships: []
+      select_permissions: []
+      table: agent_assignment
+      update_permissions: []
+    - array_relationships: []
+      delete_permissions: []
+      event_triggers: []
+      insert_permissions: []
+      object_relationships: []
+      select_permissions: []
+      table: item
+      update_permissions: []
+    - array_relationships: []
+      delete_permissions: []
+      event_triggers: []
+      insert_permissions: []
+      object_relationships: []
+      select_permissions: []
+      table: number_order_payment_valid
+      update_permissions: []
+    - array_relationships: []
+      delete_permissions: []
+      event_triggers:
+      - definition:
+          insert:
+            columns:
+            - created_at
+            - user_name
+            - id
+        name: validate_order
+        retry_conf:
+          interval_sec: 30
+          num_retries: 5
+        webhook: https://us-central1-hasura-serverless.cloudfunctions.net/validate_order
+      insert_permissions: []
+      object_relationships:
+      - comment: null
+        name: validation
+        using:
+          manual_configuration:
+            column_mapping:
+              id: order_id
+            remote_table: order_validation
+      - comment: null
+        name: payment
+        using:
+          manual_configuration:
+            column_mapping:
+              id: order_id
+            remote_table: payment
+      - comment: null
+        name: restaurant_approval
+        using:
+          manual_configuration:
+            column_mapping:
+              id: order_id
+            remote_table: restaurant_approval
+      - comment: null
+        name: agent_assignment
+        using:
+          manual_configuration:
+            column_mapping:
+              id: order_id
+            remote_table: agent_assignment
+      select_permissions: []
+      table: order
+      update_permissions: []
+    - array_relationships: []
+      delete_permissions: []
+      event_triggers: []
+      insert_permissions: []
+      object_relationships: []
+      select_permissions: []
+      table: number_order_agent_assigned
+      update_permissions: []
+    - array_relationships: []
+      delete_permissions: []
+      event_triggers:
+      - definition:
+          insert:
+            columns:
+            - type
+            - order_id
+            - amount
+            - is_success
+            - created_at
+        name: restaurant_approval
+        retry_conf:
+          interval_sec: 30
+          num_retries: 5
+        webhook: https://us-central1-hasura-serverless.cloudfunctions.net/restaurant_approval
+      insert_permissions: []
+      object_relationships: []
+      select_permissions: []
+      table: payment
+      update_permissions: []
+    - array_relationships: []
+      delete_permissions: []
+      event_triggers: []
+      insert_permissions: []
+      object_relationships: []
+      select_permissions: []
+      table: number_order
+      update_permissions: []
+    - array_relationships: []
+      delete_permissions: []
+      event_triggers: []
+      insert_permissions: []
+      object_relationships: []
+      select_permissions: []
+      table: number_order_validated
+      update_permissions: []
+    - array_relationships: []
+      delete_permissions: []
+      event_triggers:
+      - definition:
+          insert:
+            columns:
+            - order_id
+            - is_approved
+            - created_at
+        name: agent_assignment
+        retry_conf:
+          interval_sec: 30
+          num_retries: 5
+        webhook: https://us-central1-hasura-serverless.cloudfunctions.net/agent_assignment
+      insert_permissions: []
+      object_relationships: []
+      select_permissions: []
+      table: restaurant_approval
+      update_permissions: []
+    - array_relationships: []
+      delete_permissions: []
+      event_triggers: []
+      insert_permissions: []
+      object_relationships: []
+      select_permissions: []
+      table: order_item
+      update_permissions: []
+    - array_relationships: []
+      delete_permissions: []
+      event_triggers: []
+      insert_permissions: []
+      object_relationships: []
+      select_permissions: []
+      table: number_order_restaurant_approved
+      update_permissions: []
+    - array_relationships: []
+      delete_permissions: []
+      event_triggers: []
+      insert_permissions: []
+      object_relationships: []
+      select_permissions: []
+      table: order_validation
+      update_permissions: []

@@ -8,6 +8,8 @@ import {Button, Grid, Jumbotron,
   FormControl, FormGroup, ControlLabel,
   HelpBlock} from 'react-bootstrap';
 
+const PUBLIC_URL = process.env.PUBLIC_URL;
+
 class App extends React.Component {
   constructor (props) {
     super(props);
@@ -36,13 +38,13 @@ class App extends React.Component {
     return (
       <Router>
         <Switch>
-          <Route exact path="/" render={(routeProps) =>
+          <Route exact path={`${PUBLIC_URL}/`} render={(routeProps) =>
             (<Home routeProps={routeProps} logout={this.logout} username={this.state.username} onChange={this.handleChange} onClick={this.onSave} />)
           } />
-          <Route path="/place-order" render={(routeProps) =>
+          <Route path={`${PUBLIC_URL}/place-order`} render={(routeProps) =>
             (<PlaceOrder routeProps={routeProps} username={this.state.username} />)
           } />
-          <Route path="/order/:orderId" render={({match}) =>
+          <Route path={`${PUBLIC_URL}/order/:orderId`} render={({match}) =>
             (<OrderStatus orderId={match.params.orderId} username={this.state.username} />)
           } />
         </Switch>
@@ -69,7 +71,7 @@ const Home = ({username, onChange, onClick, logout}) => {
         <Jumbotron>
           <h1>Hi! {username} <span role="img" aria-label="emoji">🤓</span></h1>
         </Jumbotron>
-        <Link to="/place-order"><Button bsStyle="primary">Place new order</Button></Link>
+        <Link to={`${PUBLIC_URL}/place-order`}><Button bsStyle="primary">Place new order</Button></Link>
         &nbsp; &nbsp;
         <Button bsStyle="danger" onClick={logout}>Logout</Button>
         <hr/>

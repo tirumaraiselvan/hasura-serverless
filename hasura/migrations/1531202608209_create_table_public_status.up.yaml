@@ -1,9 +1,0 @@
-- args:
-    sql: CREATE TABLE public."status"("order_id" text NOT NULL, "placed" boolean NOT
-      NULL, "approved" boolean NOT NULL, "driver_assigned" boolean NOT NULL, "food_picked"
-      boolean NOT NULL, "delivered" boolean NOT NULL, PRIMARY KEY ("order_id") )
-  type: run_sql
-- args:
-    name: status
-    schema: public
-  type: add_existing_table_or_view

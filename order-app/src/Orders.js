@@ -3,82 +3,108 @@ import {Table, Button} from 'react-bootstrap';
 
 import {Link} from "react-router-dom";
 import gql from "graphql-tag";
-import {Mutation, Subscription} from "react-apollo";
+import {Subscription} from "react-apollo";
 import getStatus from './GetStatus';
+
+const PUBLIC_URL = process.env.PUBLIC_URL;
 
 const GET_ORDERS = gql`
   subscription fetch_orders($user: String!) {
-    orders(where: {user_id: {_eq: $user}}, order_by: created_asc) {
-      order_id
-      order_valid
-      payment_valid
-      approved
-      driver_assigned
-      created
+    order(where: {user_name: {_eq: $user}}, order_by: created_at_desc, limit: 20) {
+      id
+      created_at
+      validation {
+        is_validated
+      }
+      payment {
+        is_success
+      }
+      restaurant_approval {
+        is_approved
+      }
+      agent_assignment {
+        is_assigned
+      }
     }
   }
 `;
 
-const PAY_ALL = gql`
-  mutation payAll($userid: String!) {
-    update_orders(_set: {payment_valid: true, placed: true}, where: {
-      user_id: {_eq: $userid},
-      _or: [
-        {payment_valid: {_is_null: true}},
-        {placed: {_eq: false}}
-      ]}) {
-      affected_rows
+class MakeAllPayment  extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      paymentDone: null,
+      loading: null,
+      username: props.username,
+      error: null,
+      message: null
     }
+    this.onClick = this.onClick.bind(this);
   }
-`;
 
+  onClick () {
+    this.setState({loading: true , ...this.state});
+    const _this = this;
+    fetch('https://us-central1-hasura-serverless.cloudfunctions.net/pay_all',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              user_name: this.state.username
+            })
+          })
+      .then(res => res.json())
+      .catch(err => {
+        _this.setState({loading: false, error: err.toString(), ..._this.state});
+      })
+      .then(response => {
+        _this.setState({paymentDone: true, loading: false, message: response.message, ..._this.state});
+      });
+  }
+
+  render() {
+    if (this.state.loading) {
+      return (<Button bsStyle="warning" disabled>Loading...</Button>);
+    }
+    if (this.state.error) {
+      return (<Button bsStyle="warning" >Try again: {this.state.error.toString()}</Button>);
+    }
+    return (
+      <Button
+        bsStyle="warning"
+        onClick={this.onClick}
+      >
+        {this.state.paymentDone ? 'Paid!' : 'Pay all'}
+      </Button>
+    );
+  }
+}
 
 const Orders = ({username}) => (
   <div>
     <h2>Your orders </h2>
     <hr/>
-    <Mutation mutation={PAY_ALL}>
-      {(payAll, {loading, error, data}) => {
-        if (loading) {
-          return (<span><Button bsStyle="warning" disabled>Loading...</Button>&nbsp;&nbsp;</span>);
-        }
-        if (error) {
-          return (<span><Button bsStyle="warning" >Try again: {error.toString()}</Button>&nbsp;&nbsp;</span>);
-        }
-        return (
-          <span>
-            <Button
-              bsStyle="warning"
-              onClick={(e) => {
-                payAll({
-                  variables: {
-                    userid: username
-                  }})
-              }}>
-              {data ? (data.update_orders.affected_rows + ' paid!') : 'Pay all'}
-            </Button>&nbsp;&nbsp;
-          </span>
-        );
-      }}
-    </Mutation>
+    <MakeAllPayment username={username} />
     <hr/>
     <Subscription
       subscription={GET_ORDERS} variables={{user: username}}>
       {({loading, error, data}) => {
         if (loading) return "Loading...";
-        if (error) return `Error!: ${error}`;
-        if (data.orders.length === 0) {
+        if (error) return `Error!: ${JSON.stringify(error)}`;
+        if (data.order.length === 0) {
           return "No orders yet."
         } else {
-          const orders = data.orders.map((o, i) => (
+          const orders = data.order.map((o, i) => (
             <tr key={i}>
               <td>
                 {
-                  (new Date(o.created)).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
+                  (new Date(o.created_at)).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
                 }
               </td>
               <td>
-                <Link to={'/order/'+o.order_id}>{o.order_id}</Link>
+                <Link to={`${PUBLIC_URL}/order/${o.id}`}>{o.id}</Link>
               </td>
               <td>
                 {getStatus(o)}
