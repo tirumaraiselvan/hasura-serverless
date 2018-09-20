@@ -31,7 +31,7 @@ cd tmp
 git add .
 git commit -m "deploy"
 git remote set-url origin "$ORIGIN_REMOTE_URL"
-git push origin gh-pages
+git push -f origin gh-pages
 cd ..
 
 rm -rf tmp
