@@ -1,7 +1,1 @@
-creds/
-user/node_modules/
-hasura/node_modules/
-restaurant/node_modules/
-temp/
-order-app/.env
-analytics/.env
+tmp
