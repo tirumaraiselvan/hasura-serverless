@@ -36,13 +36,13 @@ class App extends React.Component {
     return (
       <Router>
         <Switch>
-          <Route exact path="/" render={(routeProps) =>
+          <Route exact path="/hasura-serverless/order-app/" render={(routeProps) =>
             (<Home routeProps={routeProps} logout={this.logout} username={this.state.username} onChange={this.handleChange} onClick={this.onSave} />)
           } />
-          <Route path="/place-order" render={(routeProps) =>
+          <Route path="/hasura-serverless/order-app/place-order" render={(routeProps) =>
             (<PlaceOrder routeProps={routeProps} username={this.state.username} />)
           } />
-          <Route path="/order/:orderId" render={({match}) =>
+          <Route path="/hasura-serverless/order-app/order/:orderId" render={({match}) =>
             (<OrderStatus orderId={match.params.orderId} username={this.state.username} />)
           } />
         </Switch>

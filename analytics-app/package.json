@@ -1,6 +1,6 @@
 {
   "name": "analytics-app",
-  "homepage" : "https://shahidhk.github.io/hasura-serverless/analytics/",
+  "homepage" : "https://shahidhk.github.io/hasura-serverless/analytics-app/",
   "version": "0.1.0",
   "private": true,
   "engines": {
