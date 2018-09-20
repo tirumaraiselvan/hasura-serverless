@@ -1,6 +1,6 @@
 {
   "name": "order-app",
-  "homepage" : "https://shahidhk.github.io/hasura-serverless/order",
+  "homepage" : "https://shahidhk.github.io/hasura-serverless/order/",
   "version": "0.1.0",
   "private": true,
   "engines": {
