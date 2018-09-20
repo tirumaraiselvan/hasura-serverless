@@ -104,7 +104,7 @@ class PlaceOrder extends React.Component {
             <Mutation mutation={PLACE_ORDER}>
               {(placeOrder, {loading, error, data}) => {
                 if (data) {
-                  this.props.routeProps.history.push('/order/'+this.state.uuid);
+                  this.props.routeProps.history.push(`${PUBLIC_URL}/order/${this.state.uuid}`);
                 }
                 if (loading) {
                   return (<span><Button bsStyle="primary" disabled>Loading...</Button>&nbsp;&nbsp;</span>);
@@ -145,7 +145,7 @@ class PlaceOrder extends React.Component {
             <Mutation mutation={PLACE_MANY_ORDERS}>
               {(placeOrder, {loading, error, data}) => {
                 if (data) {
-                  this.props.routeProps.history.push('/');
+                  this.props.routeProps.history.push(`${PUBLIC_URL}`);
                 }
                 if (loading) {
                   return (<span><Button bsStyle="primary" disabled>Loading...</Button>&nbsp;&nbsp;</span>);

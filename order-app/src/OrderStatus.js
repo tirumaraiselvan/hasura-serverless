@@ -60,7 +60,7 @@ const OrderStatus = ({username, orderId}) => {
                           Id:
                         </td>
                         <td>
-                          <Link to={`order/${o.id}`}>{o.id}</Link>
+                          <Link to={`${PUBLIC_URL}/order/${o.id}`}>{o.id}</Link>
                         </td>
                       </tr>
                       <tr>

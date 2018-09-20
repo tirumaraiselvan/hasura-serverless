@@ -71,7 +71,7 @@ const Home = ({username, onChange, onClick, logout}) => {
         <Jumbotron>
           <h1>Hi! {username} <span role="img" aria-label="emoji">🤓</span></h1>
         </Jumbotron>
-        <Link to="place-order"><Button bsStyle="primary">Place new order</Button></Link>
+        <Link to={`${PUBLIC_URL}/place-order`}><Button bsStyle="primary">Place new order</Button></Link>
         &nbsp; &nbsp;
         <Button bsStyle="danger" onClick={logout}>Logout</Button>
         <hr/>
