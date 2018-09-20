@@ -6,6 +6,8 @@ import gql from "graphql-tag";
 import {Subscription} from "react-apollo";
 import getStatus from './GetStatus';
 
+const PUBLIC_URL = process.env.PUBLIC_URL;
+
 const GET_ORDERS = gql`
   subscription fetch_orders($user: String!) {
     order(where: {user_name: {_eq: $user}}, order_by: created_at_desc, limit: 20) {
@@ -102,7 +104,7 @@ const Orders = ({username}) => (
                 }
               </td>
               <td>
-                <Link to={'/order/'+o.id}>{o.id}</Link>
+                <Link to={`order/${o.id}`}>{o.id}</Link>
               </td>
               <td>
                 {getStatus(o)}

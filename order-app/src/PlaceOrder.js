@@ -6,6 +6,8 @@ import { Query, Mutation } from "react-apollo";
 
 const uuidv1 = require('uuid/v1');
 
+const PUBLIC_URL = process.env.PUBLIC_URL;
+
 const GET_ITEMS= gql`
   query fetch_items {
     item (order_by: name_asc) {
@@ -191,7 +193,7 @@ class PlaceOrder extends React.Component {
                 );
               }}
             </Mutation>
-            <Link to="/"><Button bsStyle="danger">Cancel</Button></Link>
+            <Link to={`${PUBLIC_URL}`}><Button bsStyle="danger">Cancel</Button></Link>
           </div>
         </Grid>
       );
